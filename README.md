@@ -1,82 +1,54 @@
 # AI Governance Control Tower
 
-AI Governance Control Tower is an open-source governance platform for managing AI systems in regulated environments. The platform aligns with NIST AI RMF, SR 11-7, BCBS239, and EU AI Act principles through model inventory management, governance controls, risk classification, auditability, and continuous monitoring.
+## 1. Executive Summary
 
-### Target Audience
+AI Governance Control Tower is an open-source governance platform designed to help organizations manage, monitor, and evidence responsible AI practices across regulated environments. It serves as a centralized command center for AI oversight, bringing together model inventory management, data asset governance, model validation workflows, risk assessment, audit readiness, and continuous monitoring in a single operating framework. The platform enables cross-functional teams to improve transparency, strengthen accountability, streamline governance processes, and demonstrate alignment with leading regulatory and risk management frameworks, including NIST AI RMF, SR 11-7, BCBS 239, and the EU AI Act.
 
-**Business**
-
-- CRO
-- Chief
-     Data Officer
-- Chief
-     AI Officer
-- Model
-     Risk Management
-
-**Technology**
-
-- Data
-     Architects
-- Data
-     Engineers
-- MLOps
-     Teams
-
-**Risk & Compliance**
-
-- Internal
-     Audit
-- Regulatory
-     Reporting
-- Compliance
-
-### Regulatory Alignment
-
-**NIST AI RMF**
-
-- Govern
-- Map
-- Measure
-- Manage
-
-**SR 11-7**
-
-- Model
-     Risk Management
-
-**EU AI Act**
-
-- Transparency
-- Human
-     Oversight
-- Monitoring
-
-**BCBS239**
-
-- Data
-     Quality
-- Lineage
-- Controls
-
-### High-Level Architecture
+## 2. Architecture Diagram
 
 ```mermaid
+---
+title: AI Governance Control Tower
+---
 graph TD;
     classDef process fill:#2196F3,stroke:#0D47A1,stroke-width:2px,color:#fff;
     classDef entity fill:#4CAF50,stroke:#1B5E20,stroke-width:2px,color:#fff;
     
-    Dash[Governance Dashboard Streamlit]:::entity --> DQ[Data Quality]:::entity;
-    Dash[Governance Dashboard Streamlit]:::entity --> MRM[Model Risk Monitoring]:::entity;
-    Dash[Governance Dashboard Streamlit]:::entity --> AIGR[AI Governance Reporting]:::entity;
+    Dash[Executive Dashboard]:::entity --> MI(Model Inventory):::process;
+    Dash[Executive Dashboard]:::entity --> DAI(Data Asset Inventory):::process;
+    Dash[Executive Dashboard]:::entity --> RR(Risk Register):::process;
 
-    DQ[Data Quality]:::entity --> GEV(Great Expectations Validation):::process;
-    MRM[Model Risk Monitoring]:::entity --> EADD(Evidently AI Drift Detection):::process;
-    AIGR[AI Governance Reporting]:::entity --> AEES(Audit Engine Evidence Store):::process;
-    GEV(Great Expectations Validation):::process --> FSDB(Feature Store DuckDB):::process;
-    EADD(Evidently AI Drift Detection):::process --> FSDB(Feature Store DuckDB):::process;
-    AEES(Audit Engine Evidence Store):::process --> FSDB(Feature Store DuckDB):::process;
+    MI(Model Inventory):::process --> AV("Audit & Validation"):::process;
+    DAI(Data Asset Inventory):::process --> AV("Audit & Validation"):::process;
+    RR(Risk Register):::process --> AV("Audit & Validation"):::process;
 
-    FSDB(Feature Store DuckDB):::process --> MLM("ML Models (XGBoost/LightGBM)"):::process;
+    AV("Audit & Validation"):::process --> DB("DuckDB Backend"):::process;
+
 
 ```
+
+## 3. Regulatory Mapping Table
+
+| **Component** | **NIST AI RMF** | **SR 11-7** | **EU AI Act** |
+| :--- | :---: | :---: | :---: |
+| Model Inventory | &#10003; | &#10003; | &#10003; |
+| Validation | &#10003; | &#10003; | &#10003; |
+| Risk Register | &#10003; | &#10003; | &#10003; |
+| Audit Trail | &#10003; | &#10003; | &#10003; |
+| Data Inventory | &#10003; | — | &#10003; |
+
+## 4. Current Features
+
+### Governance Foundation (Phase 1)
+
+✅ Model Inventory
+
+✅ Data Asset Inventory
+
+✅ AI Risk Register
+
+✅ Governance Policies
+
+✅ Model Validation
+
+✅ Audit Event Tracking

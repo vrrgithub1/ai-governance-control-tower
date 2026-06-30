@@ -1,7 +1,7 @@
 import duckdb
 
 def populate_governance_data():
-    db_file = "ai_governance_control_tower.db"
+    db_file = "database/ai_governance_control_tower.db"
     conn = duckdb.connect(db_file)
     
     print(f"Connecting to database '{db_file}' to execute sample insertions...\n")

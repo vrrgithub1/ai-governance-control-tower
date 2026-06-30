@@ -1,7 +1,7 @@
 import duckdb
 
 def generate_database_schema():
-    database_name = "ai_governance_control_tower.db"
+    database_name = "database/ai_governance_control_tower.db"
     
     try:
         # Connect to the existing DuckDB database

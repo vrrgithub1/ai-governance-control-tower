@@ -1,10 +1,9 @@
 import duckdb
+# Assumes your database manager module resides in the same directory path tier
+from src.database import DatabaseManager 
 
-def setup_complete_governance_schema(rebuild: bool = False):
-    db_file = "database/ai_governance_control_tower.db"
-    conn = duckdb.connect(db_file)
-    
-    print(f"Initializing unified build sequence for database: {db_file}\n")
+def setup_complete_governance_schema(db_manager: DatabaseManager, rebuild: bool = False):
+    print(f"Initializing unified build sequence for database target via DatabaseManager...\n")
     
     # 1. Consolidated Schema Definitions (Ordered by dependency)
     schemas = {
@@ -165,9 +164,10 @@ def setup_complete_governance_schema(rebuild: bool = False):
                 Event_Description VARCHAR
             );
         """,
+
         "data_quality_results": """
             CREATE TABLE IF NOT EXISTS main.data_quality_results (
-                Run_ID VARCHAR PRIMARY KEY,
+                Run_ID VARCHAR NOT NULL,
                 Dataset_ID VARCHAR NOT NULL,
                 Check_Name VARCHAR NOT NULL,
                 Check_Type VARCHAR,
@@ -176,7 +176,23 @@ def setup_complete_governance_schema(rebuild: bool = False):
                 Actual_Value VARCHAR,
                 Quality_Score DOUBLE,
                 Severity VARCHAR,
-                Run_Date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                Run_Date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                -- Dynamic multi-rule logging constraint
+                PRIMARY KEY (Run_ID, Dataset_ID, Check_Name)                
+            );
+        """,
+
+        "quality_rule_definition": """
+            CREATE TABLE IF NOT EXISTS main.quality_rule_definition (
+                Rule_ID VARCHAR PRIMARY KEY,
+                Rule_Name VARCHAR NOT NULL,
+                Dataset_ID VARCHAR NOT NULL,       -- e.g., 'D001' (Customer Master)
+                Column_Name VARCHAR NOT NULL,
+                Rule_Type VARCHAR NOT NULL,        -- NOT_NULL, UNIQUE, REFERENCE, ENUM
+                Rule_Expression VARCHAR NOT NULL,  -- Standard SQL clause that evaluates to TRUE if INVALID
+                Severity VARCHAR NOT NULL,         -- High, Medium, Low
+                Enabled_Flag BOOLEAN DEFAULT TRUE
             );
         """
     }
@@ -190,70 +206,47 @@ def setup_complete_governance_schema(rebuild: bool = False):
         "DROP TABLE IF EXISTS main.model_validation;",
         "DROP TABLE IF EXISTS main.model_inventory;",
         "DROP TABLE IF EXISTS main.audit_event;",
-        "DROP TABLE IF EXISTS main.data_quality_results;"
+        "DROP TABLE IF EXISTS main.data_quality_results;",
+        "DROP TABLE IF EXISTS main.quality_rule_definition;"
     ]
 
-    # 2. Consolidated Seed Insert Scripts
-    seed_data = {
-        "risk_register": """
-            INSERT OR REPLACE INTO main.risk_register (Risk_ID, Risk_Description, Category, Severity, Status, Owner)
-            VALUES 
-                ('R001', 'Data Drift', 'Operational', 'High', 'Open', 'John Doe'),
-                ('R002', 'Bias Detection Failure', 'Compliance', 'High', 'Open', 'Jane Smith'),
-                ('R003', 'Missing Explainability', 'Regulatory', 'Medium', 'Closed', 'John Doe');
-        """,
-        "governance_policy": """
-            INSERT OR REPLACE INTO main.governance_policy (Policy_ID, Policy_Name, Version, Owner, Review_Date, Policy_Status, Approved_By)
-            VALUES 
-                ('P001', 'AI Governance Policy', '1.0', 'Governance Team', '2026-12-31', 'Approved', 'John Doe');
-        """,
-        "model_inventory": """
-            INSERT OR REPLACE INTO main.model_inventory (Model_ID, Model_Name, Risk_Tier, Model_Criticality)
-            VALUES 
-                ('M001', 'AML Monitoring', 'High', 'Mission Critical'),
-                ('M002', 'Marketing Churn', 'Medium', 'Low');
-        """
-    }
 
-    try:
-        # REMOVED: conn.execute("SET foreign_keys = true;") -> DuckDB enforces them by default!
-        
-        # Begin a transactional block to ensure all-or-nothing schema creation
-        conn.execute("BEGIN TRANSACTION;")
-
-        if rebuild:
-            print("Rebuild flag detected. Dropping existing tables...")
-            for drop_sql in drop_objects:
-                conn.execute(drop_sql)
-                print(f"✔ Executed: {drop_sql.strip()}")
-            print("All specified tables dropped successfully.\n")
-
-        # Build all fresh tables
-        for table_name, schema_sql in schemas.items():
-            conn.execute(schema_sql)
-            print(f"✔ Table '{table_name}' built successfully.")
-            
-        print("\nPlacing static initialization assets...")
-        
-        # Hydrate target seed registries
-        for target_table, insert_sql in seed_data.items():
-            conn.execute(insert_sql)
-            print(f"✔ Initial data for '{target_table}' seeded successfully.")
-            
-        conn.commit()
-        print("\n🎉 Database build complete! All schema corrections applied safely.")
-        
-    except Exception as e:
-        # Only rollback if the transaction was actually started
+    # Open a single context-managed workspace block
+    with db_manager.connection() as conn:
         try:
-            conn.execute("ROLLBACK;")
-            print(f"\n❌ Execution breakdown encountered! Schema variations rejected and transaction rolled back.")
-        except duckdb.TransactionException:
-            print(f"\n❌ Execution breakdown encountered before transaction started.")
-        print(f"Details: {e}")
-    finally:
-        conn.close()
+            # Begin a transactional block to ensure all-or-nothing schema creation
+            conn.execute("BEGIN TRANSACTION;")
+
+            if rebuild:
+                print("Rebuild flag detected. Dropping existing tables...")
+                for drop_sql in drop_objects:
+                    conn.execute(drop_sql)
+                    print(f"✔ Executed: {drop_sql.strip()}")
+                print("All specified tables dropped successfully.\n")
+
+            # Build all fresh tables
+            for table_name, schema_sql in schemas.items():
+                conn.execute(schema_sql)
+                print(f"✔ Table '{table_name}' built successfully.")
+                
+            print("\nPlacing static initialization assets...")
+            
+            conn.commit()
+            print("\n🎉 Database build complete! All schema corrections applied safely.")
+            
+        except Exception as e:
+            # Only rollback if the transaction was actually started
+            try:
+                conn.execute("ROLLBACK;")
+                print(f"\n❌ Execution breakdown encountered! Schema variations rejected and transaction rolled back.")
+            except duckdb.TransactionException:
+                print(f"\n❌ Execution breakdown encountered before transaction started.")
+            print(f"Details: {e}")
 
 if __name__ == "__main__":
-    setup_complete_governance_schema(rebuild=True)  # Set rebuild to True to drop and recreate tables
-
+    # Standard baseline invocation initialization 
+    from config import Settings
+    manager = DatabaseManager(db_path=Settings.DATABASE_PATH, read_only=False)
+    
+    # Execute structural reset setup
+    setup_complete_governance_schema(db_manager=manager, rebuild=True)

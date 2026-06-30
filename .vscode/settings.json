@@ -15,5 +15,5 @@
         "attached": false
       }
     ],
-    "duckdb.defaultDatabase": "governance_control_tower"
+    "duckdb.defaultDatabase": "ai_governance_control_tower"
 }

@@ -83,7 +83,9 @@ def populate_governance_data(db_manager: DatabaseManager):
             ('DQ105', 'Positive Trade Amount', 'D003', 'Trade_Amount', 'VALUE_CHECK', 
             'TRY_CAST(Trade_Amount AS DOUBLE) IS NULL OR TRY_CAST(Trade_Amount AS DOUBLE) <= 0', 'High', True),
             ('DQ106', 'Valid Fiat Currency ISO', 'D003', 'Currency', 'ENUM_CHECK', 
-            'Currency NOT IN (''USD'', ''EUR'', ''GBP'', ''CAD'', ''JPY'', ''SGD'', ''HKD'')', 'Medium', True);
+            'Currency NOT IN (''USD'', ''EUR'', ''GBP'', ''CAD'', ''JPY'', ''SGD'', ''HKD'')', 'Medium', True),
+            ('DQ_GOV_001', 'Valid Ingestion Trigger Source', 'ORCHESTRATION_MASTER', 'Trigger_Source', 'ENUM_CHECK', 
+            'Trigger_Source NOT IN (''SCHEDULER'', ''EVENT_DRIVEN'', ''MANUAL_CLI'', ''WEB_UI'', ''CI_CD_PIPELINE'', ''API_WEBHOOK'')', 'High', True);
         """
     ]
 

@@ -34,14 +34,18 @@ def setup_complete_governance_schema(db_manager: DatabaseManager, rebuild: bool 
         "governance_execution": """
             CREATE TABLE IF NOT EXISTS main.governance_execution (
                 Run_Id VARCHAR PRIMARY KEY,
-                Start_Time TIMESTAMP,
-                End_Time TIMESTAMP,
-                Status VARCHAR,
-                Trigger_Source VARCHAR,
-                Triggered_By VARCHAR,
-                Total_Datasets INTEGER,
-                Total_Models INTEGER,
-                Overall_Status VARCHAR
+                Start_Time TIMESTAMP NOT NULL,
+                End_Time TIMESTAMP, -- Allowed to be null during execution lifecycle
+                Status VARCHAR NOT NULL 
+                    CHECK (Status IN ('In Progress', 'Completed')),
+                Trigger_Source VARCHAR NOT NULL 
+                    CHECK (Trigger_Source IN ('SCHEDULER', 'EVENT_DRIVEN', 'MANUAL_CLI', 'WEB_UI', 'CI_CD_PIPELINE', 'API_WEBHOOK')),
+                Triggered_By VARCHAR NOT NULL,
+                Total_Datasets INTEGER 
+                    CHECK (Total_Datasets IS NULL OR Total_Datasets >= 0),
+                Total_Models INTEGER 
+                    CHECK (Total_Models IS NULL OR Total_Models >= 0),
+                Overall_Status VARCHAR NOT NULL
             );
         """,
 

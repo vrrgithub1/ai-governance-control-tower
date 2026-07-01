@@ -1,62 +1,39 @@
 import os
 from datetime import datetime
 import duckdb
-from src.database import DatabaseManager  # Adjusted to import from your central manager module
+from src.database import DatabaseManager  
+from config import Settings
 
 class GovernanceRunProcess:
     def __init__(self, db_manager: DatabaseManager):
         """Initializes the coordinator by injecting the central thread-safe database manager."""
         self.db = db_manager
-        self._init_tables()
-
-    def _init_tables(self):
-        """Ensures that both the orchestration and task execution metadata registries exist."""
-        with self.db.connection() as conn:
-            # 1. Master Run Table Execution Gate
-            conn.execute("""
-            CREATE TABLE IF NOT EXISTS main.governance_execution (
-                Run_Id VARCHAR PRIMARY KEY,
-                Start_Time TIMESTAMP,
-                End_Time TIMESTAMP,
-                Status VARCHAR,
-                Trigger_Source VARCHAR,
-                Triggered_By VARCHAR,
-                Total_Datasets INTEGER,
-                Total_Models INTEGER,
-                Overall_Status VARCHAR
-            );
-            """)
-
-            # 2. Ingestion/Task Process Table Execution Gate
-            conn.execute("""
-            CREATE TABLE IF NOT EXISTS main.governance_run_process (
-                Process_Id VARCHAR PRIMARY KEY,
-                Process_Name VARCHAR NOT NULL,
-                Run_Id VARCHAR NOT NULL,
-                Dataset_ID VARCHAR,
-                Layer VARCHAR,                     -- Bronze/Silver/Gold
-                Status VARCHAR,
-                Records_read INTEGER,
-                Records_passed INTEGER,
-                Records_failed INTEGER,
-                Start_Time TIMESTAMP,
-                End_Time TIMESTAMP,
-                FOREIGN KEY (Run_Id) REFERENCES main.governance_execution (Run_Id)
-            );
-            """)
 
     # ====================================================================================
     # MASTER RUN MANAGERS (main.governance_execution)
     # ====================================================================================
 
     def add_new_run_id(self, p_trigger_source: str, p_triggered_by: str) -> str:
-        """Generates a custom date-sequenced master Run_Id (RUN_YYYYMMDD_NNN) and starts a new run."""
+        """
+        Generates a unique date-sequenced master Run_Id (RUN_YYYYMMDD_NNN),
+        sets initial status trackers, and starts the global daily batch window.
+        """
         current_date_str = datetime.now().strftime("%Y%m%d")
         search_pattern = f"RUN_{current_date_str}_%"
 
         query_find_max_seq = """
             SELECT MAX(Run_Id) FROM main.governance_execution WHERE Run_Id LIKE ?;
         """
+
+        # Enforce strict audit formatting constraints on invocation triggers
+        source = p_trigger_source.strip().upper()
+        actor = p_triggered_by.strip()
+        
+        VALID_SOURCES = {'SCHEDULER', 'EVENT_DRIVEN', 'MANUAL_CLI', 'WEB_UI', 'CI_CD_PIPELINE', 'API_WEBHOOK'}
+        if source not in VALID_SOURCES:
+            raise ValueError(f"❌ Audit Violation: Invalid Trigger_Source '{p_trigger_source}'. Must be one of {list(VALID_SOURCES)}")
+        if not actor or len(actor) < 4:
+            raise ValueError(f"❌ Audit Violation: 'p_triggered_by' context is too vague. Provided: '{p_triggered_by}'.")
 
         with self.db.connection() as conn:
             result = conn.execute(query_find_max_seq, [search_pattern]).fetchone()
@@ -68,15 +45,15 @@ class GovernanceRunProcess:
                     Run_Id, Start_Time, End_Time, Status, Trigger_Source, 
                     Triggered_By, Total_Datasets, Total_Models, Overall_Status
                 )
-                VALUES (?, CURRENT_TIMESTAMP, NULL, 'In Progress', ?, ?, NULL, NULL, NULL)
+                VALUES (?, CURRENT_TIMESTAMP, NULL, 'In Progress', ?, ?, NULL, NULL, 'RUNNING')
                 ON CONFLICT (Run_Id) DO NOTHING; 
             """
-            conn.execute(query_insert, [new_run_id, p_trigger_source, p_triggered_by])
+            conn.execute(query_insert, [new_run_id, source, actor])
             return new_run_id
 
     def update_run_id(self, p_run_id: str, p_trigger_source: str = None, p_triggered_by: str = None, 
                       p_total_datasets: int = None, p_total_models: int = None, p_overall_status: str = None) -> bool:
-        """Applies positional parameter inline overrides to an active parent orchestration run tracking reference."""
+        """Applies inline operational overrides to an active parent batch window."""
         query_update = """
             UPDATE main.governance_execution
             SET 
@@ -93,21 +70,59 @@ class GovernanceRunProcess:
 
     def complete_run_id(self, p_run_id: str, p_trigger_source: str = None, p_triggered_by: str = None, 
                         p_total_datasets: int = None, p_total_models: int = None, p_overall_status: str = None) -> bool:
-        """Finalizes master run execution milestones and logs timestamps."""
-        query_complete = """
+        """Finalizes master run execution milestones, aggregates sub-task data quality health, and seals timestamps."""
+        with self.db.connection() as conn:
+            # If no manual status override is passed, dynamically compute it from task metrics
+            if p_overall_status is None:
+                metrics_query = """
+                    SELECT 
+                        SUM(Records_read) as total_read,
+                        SUM(Records_failed) as total_failed,
+                        COUNT(CASE WHEN Status = 'Failed' THEN 1 END) as failed_tasks
+                    FROM main.governance_run_process
+                    WHERE Run_Id = ?;
+                """
+                metrics = conn.execute(metrics_query, [p_run_id]).fetchone()
+                total_read = metrics[0] or 0
+                total_failed = metrics[1] or 0
+                failed_tasks = metrics[2] or 0
+                
+                if failed_tasks > 0:
+                    p_overall_status = "FAILED"
+                elif total_failed == 0 and total_read > 0:
+                    p_overall_status = "PASSED"
+                elif total_failed > 0:
+                    p_overall_status = "PASSED WITH WARNINGS"
+                else:
+                    p_overall_status = "FAILED" # Safety fallback if no tasks ran successfully
+
+            query_complete = """
+                UPDATE main.governance_execution
+                SET 
+                    Trigger_Source = COALESCE(?, Trigger_Source),
+                    Triggered_By = COALESCE(?, Triggered_By),
+                    Total_Datasets = COALESCE(?, Total_Datasets),
+                    Total_Models = COALESCE(?, Total_Models),
+                    Overall_Status = COALESCE(?, Overall_Status),
+                    End_Time = CURRENT_TIMESTAMP,
+                    Status = 'Completed'
+                WHERE Run_Id = ?;
+            """
+            conn.execute(query_complete, [p_trigger_source, p_triggered_by, p_total_datasets, p_total_models, p_overall_status, p_run_id])
+            return True
+
+    def fail_run_id(self, p_run_id: str, p_overall_status_note: str = None) -> bool:
+        """Emergency execution breaker. Forces the execution status to 'Completed' and stamps data state as 'FAILED'."""
+        query_fail = """
             UPDATE main.governance_execution
             SET 
-                Trigger_Source = COALESCE(?, Trigger_Source),
-                Triggered_By = COALESCE(?, Triggered_By),
-                Total_Datasets = COALESCE(?, Total_Datasets),
-                Total_Models = COALESCE(?, Total_Models),
-                Overall_Status = COALESCE(?, Overall_Status),
                 End_Time = CURRENT_TIMESTAMP,
-                Status = 'Completed'
+                Status = 'Completed',
+                Overall_Status = COALESCE(?, 'FAILED - Critical Operational Exception Encountered')
             WHERE Run_Id = ?;
         """
         with self.db.connection() as conn:
-            conn.execute(query_complete, [p_trigger_source, p_triggered_by, p_total_datasets, p_total_models, p_overall_status, p_run_id])
+            conn.execute(query_fail, [p_overall_status_note, p_run_id])
             return True
 
     def get_current_active_run_id(self) -> str:
@@ -120,14 +135,11 @@ class GovernanceRunProcess:
             return result[0] if result else None
 
     # ====================================================================================
-    # NEW EXTENSION: INGESTION PIPELINE PROCESS MANAGERS (main.governance_run_process)
+    # INGESTION PIPELINE PROCESS MANAGERS (main.governance_run_process)
     # ====================================================================================
 
     def add_new_process_id(self, p_process_name: str, p_run_id: str, p_dataset_id: str = None, p_layer: str = None) -> str:
-        """
-        Generates a custom sequence process token (PRC_YYYYMMDD_NNN) for a pipeline task,
-        verifies foreign key compliance against the parent execution run, and initiates tracking.
-        """
+        """Generates a custom sequence process token (PRC_YYYYMMDD_NNN) for an individual data feed task."""
         current_date_str = datetime.now().strftime("%Y%m%d")
         search_pattern = f"PRC_{current_date_str}_%"
 
@@ -194,7 +206,7 @@ if __name__ == "__main__":
     orchestration_engine = GovernanceRunProcess(db_manager=db_manager)
     
     print("--- 1. Generating Orchestration Run Context ---")
-    active_run = orchestration_engine.add_new_run_id(p_trigger_source="Airflow", p_triggered_by="ETL_Service_Account")
+    active_run = orchestration_engine.add_new_run_id(p_trigger_source="MANUAL_CLI", p_triggered_by="ETL_Service_Account")
     print(f"Parent Run Established: {active_run}")
 
     print("\n--- 2. Starting Medallion Layer Sub-Processes ---")

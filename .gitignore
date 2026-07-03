@@ -1,0 +1,30 @@
+# This is a comment. Git ignores these lines.
+
+# Ignore dependency directories (always end folders with a slash)
+node_modules/
+env/
+venv/
+database/
+
+
+# Ignore log files and caches anywhere in the project
+*.log
+.cache/
+
+# Ignore OS-specific system files
+.DS_Store
+Thumbs.db
+
+# Ignore environment variables / secrets
+.env
+.env.local
+
+# Ignore build outputs or compiled code
+dist/
+build/
+*.pyc
+*.class
+
+# Exception: Ignore all text files, BUT track readme.txt
+*.txt
+!readme.txt

@@ -45,7 +45,9 @@ def setup_complete_governance_schema(db_manager: DatabaseManager, rebuild: bool 
                     CHECK (Total_Datasets IS NULL OR Total_Datasets >= 0),
                 Total_Models INTEGER 
                     CHECK (Total_Models IS NULL OR Total_Models >= 0),
-                Overall_Status VARCHAR NOT NULL
+                Overall_Status VARCHAR NOT NULL,
+                Execution_Time_Seconds INTEGER
+                    CHECK (Execution_Time_Seconds IS NULL OR Execution_Time_Seconds >= 0)
             );
         """,
 
@@ -97,7 +99,12 @@ def setup_complete_governance_schema(db_manager: DatabaseManager, rebuild: bool 
                 Lineage_Available BOOLEAN,      -- True/False (mapped from Yes/No)
                 Status VARCHAR,                 -- Active/Retired
                 Data_Quality_Score DOUBLE,      -- Percentage (e.g., 98.5)
-                Created_Date DATE DEFAULT CURRENT_DATE
+                Created_Date DATE DEFAULT CURRENT_DATE,
+                Bronze_Table_Name VARCHAR,             -- e.g., 'bronze.customer_master'
+                Silver_Table_Name VARCHAR,             -- e.g., 'silver.customer_master'
+                Gold_Table_Name VARCHAR,               -- e.g., 'gold.customer_master'
+                Quarantine_Table_Name VARCHAR,          -- e.g., 'quarantine.customer_master'
+                Data_Retention_Policy VARCHAR             -- e.g., '7 years', 'Indefinite'
             );
         """,
         
@@ -196,7 +203,19 @@ def setup_complete_governance_schema(db_manager: DatabaseManager, rebuild: bool 
                 Rule_Type VARCHAR NOT NULL,        -- NOT_NULL, UNIQUE, REFERENCE, ENUM
                 Rule_Expression VARCHAR NOT NULL,  -- Standard SQL clause that evaluates to TRUE if INVALID
                 Severity VARCHAR NOT NULL,         -- High, Medium, Low
-                Enabled_Flag BOOLEAN DEFAULT TRUE
+                Enabled_Flag BOOLEAN DEFAULT TRUE,
+                Rule_Category VARCHAR                  -- Completeness, Validity, Uniqueness, Consistency, Accuracy, Timeliness, Freshness, Referential Integrity, Conformity
+            );
+        """,
+
+        "governance_metrics": """
+            CREATE TABLE IF NOT EXISTS main.governance_metrics (
+                Run_ID VARCHAR NOT NULL,
+                Metric_Name VARCHAR NOT NULL,
+                Metric_Value DOUBLE,
+                Metric_Unit VARCHAR,
+                Metric_Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (Run_ID, Metric_Name)
             );
         """
     }
@@ -205,6 +224,7 @@ def setup_complete_governance_schema(db_manager: DatabaseManager, rebuild: bool 
         "DROP TABLE IF EXISTS main.governance_run_process;",    
         "DROP TABLE IF EXISTS main.governance_execution;",    
         "DROP TABLE IF EXISTS main.governance_policy;",
+        "DROP TABLE IF EXISTS main.governance_metrics;",
         "DROP TABLE IF EXISTS main.data_asset_inventory;",
         "DROP TABLE IF EXISTS main.risk_register;",
         "DROP TABLE IF EXISTS main.model_validation;",

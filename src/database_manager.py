@@ -15,6 +15,7 @@ class DatabaseManager:
         """
         conn = duckdb.connect(database=self.db_path, read_only=self.read_only)
         try:
+            conn.execute("PRAGMA search_path='main,aigct_core,aigct_bronze,aigct_silver,aigct_quarantine,aigct_gold';")
             yield conn
         finally:
             conn.close()

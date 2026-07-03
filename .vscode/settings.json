@@ -1,19 +1,4 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:conda",
-    "python-envs.defaultPackageManager": "ms-python.python:conda",
-    "workbench.editorAssociations": {
-        "*.copilotmd": "vscode.markdown.preview.editor",
-        "*.parquet": "duckdb.dataFileViewer",
-        "*.csv": "duckdb.dataFileViewer",
-        "*.tsv": "duckdb.dataFileViewer",
-        "*.xlsx": "duckdb.dataFileViewer"
-    },
-    "duckdb.databases": [
-      {
-        "name": "governance_control_tower",
-        "path": "./database/ai_governance_control_tower.db",
-        "attached": false
-      }
-    ],
-    "duckdb.defaultDatabase": "ai_governance_control_tower"
+    "python-envs.defaultPackageManager": "ms-python.python:conda"
 }

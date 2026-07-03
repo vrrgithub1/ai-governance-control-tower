@@ -43,8 +43,8 @@ graph TD
 ### 4. Load Bronze
 
 - **Action:** Parses incoming raw source streams or files directly into relational tables within the raw ingestion tier.
-- **Metadata Impact:** Dynamically counts total data structures ingested.
-- **Target Schema:** aigct_bronze.\*
+- **Metadata Impact:** Dynamically counts total data structures ingested and writes to audit records.
+- **Target Schema & Table:** aigct_bronze.\*, aigct_core.audit_event
 
 ### 5. Apply Silver Validation / Quarantine
 
@@ -61,7 +61,7 @@ graph TD
 ### 7. Publish Gold
 
 - **Action:** Aggregates and materializes verified, compliant domain datasets into standardized canonical semantic business models ready for corporate reporting.
-- **Target Schema:** aigct_gold.\*
+- **Target Schema/table:** aigct_gold.\*, aigct_core.governance_metrics
 
 ### 8. Generate Metrics
 
@@ -85,3 +85,4 @@ graph TD
 
 - **Action:** The Streamlit interactive web client queries the metadata tables to populate the reactive analytics interface.
 - **Operational Impact:** Displays real-time executive summaries, quality stats, and drill-downs into dataset and model states without touching underlying silver/gold financial files.
+- **Target Tables:** aigct_core.governance_execution, aigct_core.governance_execution_process, aigct_core.governance_metrics, aigct_core.data_quality_results, and aigct_core.audit_event.

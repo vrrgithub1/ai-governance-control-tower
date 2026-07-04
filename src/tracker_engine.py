@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 import json
-from database_manager import DatabaseManager
+from src.database_manager import DatabaseManager
 
 class GovernanceRunProcess:
     def __init__(self, db_manager: DatabaseManager):

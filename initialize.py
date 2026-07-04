@@ -3,6 +3,7 @@ import sys
 from config import Settings  # Pointing to your global configuration
 from src.database_manager import DatabaseManager
 from src.schema_initializer import SchemaInitializer
+from src.reference_data_seeder import ReferenceDataSeeder
 
 def run_fresh_setup():
     print("🚀 Bootstrapping clean environmental runtime...")
@@ -20,6 +21,10 @@ def run_fresh_setup():
     initializer = SchemaInitializer(db_manager=manager)
     initializer.execute_ddl()
     
+    # Seed the reference data
+    seeder = ReferenceDataSeeder(db_manager=manager)
+    seeder.seed_all_reference_data()
+
     print("\n✅ Verification complete. Your fresh DuckDB binary is baked and completely ready.")
 
 if __name__ == "__main__":

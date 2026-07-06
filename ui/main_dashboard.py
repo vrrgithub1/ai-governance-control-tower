@@ -3,7 +3,6 @@ import sys
 import streamlit as st
 import pandas as pd
 
-# 💡 FIX: Force Python to recognize the project root directory
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -11,166 +10,124 @@ if project_root not in sys.path:
 from src.database_manager import DatabaseManager
 from config import Settings
 
-# ---------------------------------------------------------------------------
-# INITIAL SETUP & CONFIGURATION
-# ---------------------------------------------------------------------------
-st.set_page_config(
-    page_title="AIGCT - Core Control Tower",
-    page_icon="🤖",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
+st.set_page_config(page_title="AIGCT - Control Tower", page_icon="🛡️", layout="wide")
 st.title("🛡️ AI Governance Control Tower (AIGCT)")
-st.subheader("Core Metadata Layer Operational Monitoring Framework")
 st.markdown("---")
 
-# Initialize database access
 db = DatabaseManager(db_path=Settings.DATABASE_PATH, read_only=True)
 
-# ---------------------------------------------------------------------------
-# METADATA EXTRACTION UTILITIES
-# ---------------------------------------------------------------------------
 def load_metadata(query: str, params: list = None) -> pd.DataFrame:
-    """Executes search path queries safely and returns standard pandas DataFrames."""
     with db.connection() as conn:
-        # PRAGMA is automatically handled by your updated database.py class!
-        result = conn.execute(query, params if params else [])
-        return result.df()
+        return conn.execute(query, params if params else []).df()
 
 # ---------------------------------------------------------------------------
-# MAIN KPI BANNER TILES
+# CORE SYSTEM SUMMARY METRICS
 # ---------------------------------------------------------------------------
-st.sidebar.header("🎯 System Settings")
-st.sidebar.markdown("Navigate through different metadata monitoring registers.")
-
-# Fetch top-level counts for our system tile overview metrics
 try:
-    exec_summary = load_metadata("""
-        SELECT 
-            COUNT(run_id) as total_runs,
-            COUNT(CASE WHEN status = 'Completed' THEN 1 END) as success_runs,
-            COUNT(CASE WHEN status = 'Failed' THEN 1 END) as crashed_runs
-        FROM aigct_core.governance_execution;
-    """).iloc[0]
-
-# 💡 NEW: Dynamically count active registered data assets from your inventory catalog
-    asset_summary = load_metadata("""
-        SELECT COUNT(DISTINCT dataset_id) as active_assets 
-        FROM aigct_core.data_asset_inventory 
-        WHERE status = 'Active';
-    """).iloc[0]
+    # 1. Total runs from the master execution log
+    total_runs = load_metadata("SELECT COUNT(*) FROM aigct_core.governance_execution;").iloc[0, 0]
     
-except Exception:
-    exec_summary = {"total_runs": 0, "success_runs": 0, "crashed_runs": 0}
-    asset_summary = {"active_assets": 0}
+    # 2. Active assets directly matching your data asset repository status field
+    active_assets = load_metadata("SELECT COUNT(*) FROM aigct_core.data_asset_inventory WHERE status = 'Active';").iloc[0, 0]
+    
+    # 3. Active production models monitored
+    active_models = load_metadata("SELECT COUNT(*) FROM aigct_core.model_inventory WHERE status = 'Production';").iloc[0, 0]
+    
+    # 4. Active Risk Flags aligned to your exact column constraint (status='Open')
+    open_risks = load_metadata("SELECT COUNT(*) FROM aigct_core.risk_register WHERE status = 'Open';").iloc[0, 0]
+    
+except Exception as e:
+    # Diagnostic print behind the scenes to capture schema issues during testing
+    print(f"Summary block tracking exception: {str(e)}")
+    total_runs, active_assets, active_models, open_risks = 0, 0, 0, 0
 
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("Total Orchestration Runs", int(exec_summary["total_runs"]))
-col2.metric("Successful Batches", int(exec_summary["success_runs"]))
-col3.metric("System Pipeline Crashes", int(exec_summary["crashed_runs"]), delta_color="inverse")
-col4.metric("Active Assets Tracked", int(asset_summary["active_assets"])) # 💡 Now dynamic!
-
-st.markdown("<br>", unsafe_allow_html=True)
+col1.metric("Total Orchestration Runs", int(total_runs))
+col2.metric("Active Assets Tracked", int(active_assets))
+col3.metric("Active Models Monitored", int(active_models))
+col4.metric("Active Risk Flags", int(open_risks), delta="-Issues" if open_risks==0 else f"+{open_risks}", delta_color="inverse")
 
 # ---------------------------------------------------------------------------
-# CORE VIEWING MONITOR TABS
+# RESTRUCTURED TAB HIERARCHY
 # ---------------------------------------------------------------------------
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📈 Master Ingestion Runs", 
-    "📂 Active Data Asset Inventory", 
-    "🎯 Data Quality Registers", 
-    "🤖 Model Governance Registry",  # 💡 NEW
-    "📋 Compliance Audit Logs"
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "📊 Executive Governance", 
+    "📈 Execution", 
+    "📂 Assets", 
+    "🎯 Quality", 
+    "🤖 Models", 
+    "📋 Audit"
 ])
 
-
-# ---- TAB 1: MASTER INGESTION RUNS (ORCHESTRATOR VISIBILITY) ----
+# ---- TAB 1: EXECUTIVE GOVERNANCE ----
 with tab1:
-    st.header("Master Batch Execution Windows")
-    st.markdown("Chronological tracking log for global platform run states.")
+    st.header("Executive Oversight Dashboard")
+    st.markdown("Cross-domain platform health indexes and compliance tracking.")
     
-    runs_df = load_metadata("""
-        SELECT run_id, start_time, end_time, status, overall_status, trigger_source, total_processes 
-        FROM aigct_core.governance_execution 
-        ORDER BY start_time DESC;
+    # Calculate a simple operational health score
+    if total_runs > 0:
+        avg_dq_score = load_metadata("SELECT AVG(quality_score) FROM aigct_core.data_quality_results;").iloc[0,0]
+        avg_dq_score = round(avg_dq_score, 2) if pd.notnull(avg_dq_score) else 100.0
+    else:
+        avg_dq_score = 100.0
+        
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(f"### 📈 Data Quality Compliance Index: `{avg_dq_score}%`")
+        st.progress(int(avg_dq_score) if pd.notnull(avg_dq_score) else 100)
+    with c2:
+        st.markdown("### 🎛️ Governance Operational Status")
+        if open_risks > 0:
+            st.warning(f"⚠️ Action Required: {open_risks} active mitigation paths open.")
+        else:
+            st.success("🟢 Platform Stable: All assets and models matching compliance targets.")
+
+    st.markdown("---")
+    st.subheader("🚨 Active Risk & Mitigation Ledger")
+    
+    # Updated to match your specific constraints and table schema
+    risk_df = load_metadata("""
+        SELECT risk_id, risk_description, category, severity, status, owner, created_date, risk_owner_group
+        FROM aigct_core.risk_register
+        ORDER BY created_date DESC;
     """)
+    if risk_df.empty:
+        st.info("No active compliance risks flagged across the network.")
+    else:
+        st.dataframe(risk_df, use_container_width=True, hide_index=True)
+
+# ---- TAB 2: EXECUTION ----
+with tab2:
+    st.header("Master Batch Ingestion Windows")
+    runs_df = load_metadata("SELECT run_id, start_time, end_time, status, overall_status, trigger_source FROM aigct_core.governance_execution ORDER BY start_time DESC;")
     st.dataframe(runs_df, use_container_width=True, hide_index=True)
-    
     if not runs_df.empty:
         st.markdown("---")
-        st.subheader("🔍 Deep Drill-Down: Process Step Linear Mapping")
-        selected_run = st.selectbox("Select a Run ID to map sub-task states:", runs_df["run_id"])
-        
-        # Pull process step components dynamically based on your Option 1 design
-        process_df = load_metadata("""
-            SELECT process_id, process_name, layer_name, status, records_read, records_passed, records_failed, run_time_seconds, parent_process_id
-            FROM aigct_core.governance_execution_process
-            WHERE run_id = ?
-            ORDER BY start_time ASC;
-        """, [selected_run])
-        
+        selected_run = st.selectbox("Select Run ID to map process steps:", runs_df["run_id"])
+        process_df = load_metadata("SELECT process_id, process_name, layer_name, status, records_read, records_passed, records_failed, run_time_seconds FROM aigct_core.governance_execution_process WHERE run_id = ? ORDER BY start_time ASC;", [selected_run])
         st.dataframe(process_df, use_container_width=True, hide_index=True)
 
-# ---- TAB 2: ACTIVE DATA ASSET INVENTORY (METADATA CATALOG) ----
-with tab2:
-    st.header("Global Corporate Data Asset Repository")
-    st.markdown("Global reference configuration boundaries for active production tables.")
-    
-    assets_df = load_metadata("""
-        SELECT dataset_id, dataset_name, data_domain, source_system, classification, 
-               contains_pii, contains_financial_data, data_retention_period, refresh_frequency, status
-        FROM aigct_core.data_asset_inventory
-        WHERE dataset_id != 'SYSTEM';
-    """)
-    st.dataframe(assets_df, use_container_width=True, hide_index=True)
-
-# ---- TAB 3: DATA QUALITY REGISTERS (ANALYTICS TELEMETRY) ----
+# ---- TAB 3: ASSETS ----
 with tab3:
-    st.header("Granular Data Quality Evaluations Matrix")
-    st.markdown("Granular tracking scores parsed dynamically from registered validation rules.")
-    
-    dq_df = load_metadata("""
-        SELECT run_id, dataset_id, check_name, check_type, check_status, expected_value, actual_value, quality_score, total_records, failed_records, run_date
-        FROM aigct_core.data_quality_results
-        ORDER BY run_date DESC;
-    """)
-    st.dataframe(dq_df, use_container_width=True, hide_index=True)
+    st.header("Global Corporate Data Asset Repository")
+    st.dataframe(load_metadata("SELECT dataset_id, dataset_name, data_domain, source_system, classification, status FROM aigct_core.data_asset_inventory WHERE dataset_id != 'SYSTEM';"), use_container_width=True, hide_index=True)
 
-# ---- 💡 NEW TAB 4: MODEL GOVERNANCE REGISTRY ----
+# ---- TAB 4: QUALITY ----
 with tab4:
+    st.header("Granular Data Quality Evaluations Matrix")
+    st.dataframe(load_metadata("SELECT run_id, dataset_id, check_name, check_type, check_status, expected_value, actual_value, quality_score FROM aigct_core.data_quality_results ORDER BY run_date DESC;"), use_container_width=True, hide_index=True)
+
+# ---- TAB 5: MODELS ----
+with tab5:
     st.header("Corporate AI Model Inventory Matrix")
-    st.markdown("Regulatory compliance risk boundaries for productionized predictive systems.")
-    
-    models_df = load_metadata("""
-        SELECT model_id, model_name, model_type, model_criticality, risk_tier, 
-               regulatory_impact, status, version, approval_status, last_validation_date, next_review_date
-        FROM aigct_core.model_inventory;
-    """)
+    models_df = load_metadata("SELECT model_id, model_name, model_type, model_criticality, risk_tier, status, version, last_validation_date FROM aigct_core.model_inventory;")
     st.dataframe(models_df, use_container_width=True, hide_index=True)
-    
     if not models_df.empty:
         st.markdown("---")
-        st.subheader("🔍 Deep Drill-Down: Independent Validation History Trail")
-        selected_model = st.selectbox("Select a Model ID to inspect rigorous evaluation logs:", models_df["model_id"])
-        
-        val_history_df = load_metadata("""
-            SELECT validation_id, run_id, validation_name, validator_name, validation_result, findings_count, recommendation, approval_status, created_date
-            FROM aigct_core.model_validation
-            WHERE model_id = ?
-            ORDER BY created_date DESC;
-        """, [selected_model])
-        
-        st.dataframe(val_history_df, use_container_width=True, hide_index=True)
+        selected_model = st.selectbox("Select Model ID to view history:", models_df["model_id"])
+        st.dataframe(load_metadata("SELECT validation_id, run_id, validation_name, validator_name, validation_result, recommendation FROM aigct_core.model_validation WHERE model_id = ? ORDER BY created_date DESC;", [selected_model]), use_container_width=True, hide_index=True)
 
-# ---- TAB 5: COMPLIANCE AUDIT LOGS (REGULATORY TRACE) ----
-with tab5:
+# ---- TAB 6: AUDIT ----
+with tab6:
     st.header("Chronological Compliance History Log")
-    st.markdown("Immutable operational markers tracking data mutations, schema variances, and critical pipeline exceptions.")
-    
-    audit_df = load_metadata("""
-        SELECT event_id, run_id, process_id, event_timestamp, event_type, entity_type, entity_id, performed_by, event_description
-        FROM aigct_core.audit_event
-        ORDER BY event_timestamp DESC;
-    """)
-    st.dataframe(audit_df, use_container_width=True, hide_index=True)
+    st.dataframe(load_metadata("SELECT event_id, run_id, event_timestamp, event_type, entity_type, entity_id, event_description FROM aigct_core.audit_event ORDER BY event_timestamp DESC;"), use_container_width=True, hide_index=True)

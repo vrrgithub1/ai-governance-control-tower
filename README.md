@@ -47,69 +47,63 @@ graph TD;
 | Audit Trail | &#10003; | &#10003; | &#10003; |
 | Data Inventory | &#10003; | — | &#10003; |
 
-## 5. Current Features
+## 5. Current Features & Capabilities
 
-### Governance Foundation (Phase 1)
+### Phase I: Foundation & Observability (Delivered)
 
-✅ Model Inventory
+- ✅ **Immutable Execution Tracking (ADR-001):** Mandates unique Run IDs across environments to ensure reproducible execution lineage.
+- ✅ **Data Asset Inventory (ADR-002):** Automated structural cataloging of upstream datasets, features, and environments.
+- ✅ **Model Inventory & Metadata Registry:** Captures model architecture metrics and training footprints.
+- ✅ **Decoupled Governance Execution (ADR-003):** Established an isolated runtime engine for policy evaluation, shielding core application performance.
+- ✅ **Audit Event Tracking:** Captures immutable logs of system transitions and runtime metadata.
 
-✅ Data Asset Inventory
+### Phase II: Active Policy Enforcement (In Progress / Roadmap)
 
-✅ AI Risk Register
+- ⏳ **Governance Policy Integration:** Actively parsing and mapping live data assets against defined enterprise risk guardrails.
+- ⏳ **AI Risk Register Automation:** Programmatic scoring of risk vectors based on live asset data.
+- ⏳ **Automated Model Validation Gates:** CI/CD blocking mechanisms if an asset fails policy criteria.
 
-✅ Governance Policies
+## 6. Screenshots & Interface Preview
 
-✅ Model Validation
+Click on any section below to expand and view the interface captures for the Control Tower.
 
-✅ Audit Event Tracking
+<details>
+<summary>📊 View Phase I Dashboard Analytics (Executive & Model Posture)</summary>
+<br>
 
-## 6. Screenshots
+| Executive Governance Dashboard | Model Inventory Management |
+| :---: | :---: |
+| ![Executive Governance Dashboard](docs/images/dashboard_executive.png) | ![Model Inventory Management](docs/images/model_inventory.png) |
+| *High-level compliance posture and risk tracking control plane.* | *Real-time tracking of active production models and metadata mapping.* |
 
-Coming Soon
+</details>
 
-- Executive Governance Dashboard
-- Model Inventory Management
-- AI Risk Register
-- Audit Event Monitoring
+<details>
+<summary>🗂️ View Asset Inventory & Data Quality Previews</summary>
+<br>
 
-## 7. Roadmap
+| Data Asset Inventory | Data Quality Rules & Profiling |
+| :---: | :---: |
+| ![Data Asset Inventory](docs/images/data_asset_inventory.png) | ![Data Quality Validation](docs/images/data_quality.png) |
+| *Automated structural cataloging of upstream datasets and feature stores.* | *Execution status of validation frameworks against the data layer.* |
 
-### Phase 1 – Governance Foundation (Completed)
+</details>
 
-- Model Inventory
-- Data Inventory
-- Risk Register
-- Policies
-- Validation
-- Audit Events
+<details>
+<summary>⚖️ View Risk Registers & Audit Monitoring</summary>
+<br>
 
-### Phase 2 – Data Quality Controls
+| AI Risk Register | Audit Event Monitoring |
+| :---: | :---: |
+| ![AI Risk Register](docs/images/risk_register.png) | ![Audit Event Monitoring](docs/images/audit_monitoring.png) |
+| *Dynamic inventory mapping active vulnerabilities and policy flags.* | *Immutable ledger of system executions and Run ID lineage.* |
 
-- Great Expectations Integration
-- Automated Data Quality Scoring
+</details>
 
-### Phase 3 – Model Monitoring
+## 7. Future Horizons (Long-Term Vision)
 
-- Drift Detection
-- Performance Monitoring
+While Phase II brings active data quality validation and gatekeeping to the platform, the long-term architectural runway for the AI Governance Control Tower includes:
 
-### Phase 4 – Explainability
-
-- SHAP Integration
-- Reason Codes
-
-### Phase 5 – Fairness Monitoring
-
-- Bias Metrics
-- Fairlearn Integration
-
-### Phase 6 – Governance Automation
-
-- Policy Workflows
-- Approval Workflows
-
-### Phase 7 – Executive Control Tower
-
-- Governance KPIs
-- Risk Heatmaps
-- Compliance Dashboards
+- **Advanced Model Observability:** Incorporating statistical drift detection and automated performance degradation monitoring.
+- **Programmatic Trust & Safety:** Deep integration of Explainable AI (XAI metrics) and algorithmic fairness checks natively into the execution pipeline.
+- **Enterprise Workflows:** Automated policy approval lifecycles, risk heatmapping, and collaborative remediation queues.

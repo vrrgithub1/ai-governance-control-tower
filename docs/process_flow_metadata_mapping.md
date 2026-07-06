@@ -8,16 +8,16 @@ This document details the chronological execution flow of the data ingestion eng
 
 ```mermaid
 graph TD
-    A[Start Governance Execution] --> B[Read Active Data Assets]
-    B --> C[Create Governance Execution Process]
-    C --> D[Load Bronze Layer]
-    D --> E[Apply Silver Validation / Quarantine]
-    E --> F[Execute Data Quality Rules]
-    F --> G[Publish Gold Layer]
-    G --> H[Generate Metrics]
-    H --> I[Write Audit Events]
-    I --> J[Update Governance Execution Status]
-    J --> K[Dashboard Reads Metadata]
+    A["Start Governance Execution"] --> B["Read Active Data Assets"]
+    B --> C["Create Governance Execution Process"]
+    C --> D["Load Bronze Layer"]
+    D --> E["Apply Silver Validation / Quarantine"]
+    E --> F["Execute Data Quality Rules"]
+    F --> G["Publish Gold Layer"]
+    G --> H["Generate Metrics"]
+    H --> I["Write Audit Events"]
+    I --> J["Update Governance Execution Status"]
+    J --> K["Dashboard Reads Metadata"]
 ```
 
 ## Detailed Phase Mapping

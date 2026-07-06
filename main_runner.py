@@ -8,6 +8,7 @@ from pipelines.trade_transactions_pipeline import TradeTransactionsPipeline
 from pipelines.credit_features_pipeline import CreditFeaturesPipeline
 from pipelines.model_validation_pipeline import ModelValidationPipeline
 from config import Settings
+from src.risk_engine import AutomatedRiskEngine
 
 logger = logging.getLogger("AIGCT_Orchestrator")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -50,6 +51,8 @@ def execute_daily_batch():
             
             # 6. MASTER UNIFIED CLOSE OUT
             if model_success:
+                automated_risk_engine = AutomatedRiskEngine(db_manager=db)
+                automated_risk_engine.evaluate_run_risk(p_run_id=current_run)
                 tracker.complete_run_id(p_run_id=current_run, p_total_assets=3, p_total_models=2)
                 logger.info(f"✅ Full Data & Model Control Loop {current_run} marked as COMPLETED.")
             

@@ -23,13 +23,13 @@ jobs:
     - name: Setup Databricks CLI
       uses: databricks/setup-cli@main
 
-    # Step 1: Push the local directory to the workspace
+# Step 1: Push the local directory directly to the native Shared root folder
     - name: Deploy Scripts to Databricks Workspace
       env:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       run: |
-        databricks workspace import-dir ./src/databricks /Workspace/Shared/aigct/src/databricks --overwrite
-
+        databricks workspace import-dir ./src/databricks /Shared/aigct/src/databricks --overwrite
+        
     # Step 2: Trigger the execution on a one-time single-node cluster
     - name: Run Catalog Initialization Script
       env:

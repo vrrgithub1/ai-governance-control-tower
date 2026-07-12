@@ -1,0 +1,61 @@
+name: Deploy and Run Azure Databricks Initialization
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/databricks/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Setup Databricks CLI
+      uses: databricks/setup-cli@v1
+
+    # Step 1: Push the local directory to the workspace
+    - name: Deploy Scripts to Databricks Workspace
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      run: |
+        databricks workspace import-dir ./src/databricks /Workspace/Shared/aigct/src/databricks --overwrite
+
+    # Step 2: Trigger the execution on a one-time single-node cluster
+    - name: Run Catalog Initialization Script
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      run: |
+        databricks jobs run-now --json '{
+          "run_name": "AIGCT Catalog Initialization Run",
+          "tasks": [
+            {
+              "task_key": "init_catalog_task",
+              "spark_python_task": {
+                "python_file": "/Workspace/Shared/aigct/src/databricks/pipeline_orchestration/init_catalog.py"
+              },
+              "new_cluster": {
+                "spark_version": "15.4.x-scala2.12",
+                "node_type_id": "Standard_D4ds_v5",
+                "num_workers": 0,
+                "spark_conf": {
+                  "spark.databricks.cluster.profile": "singleNode",
+                  "spark.master": "local[*]"
+                },
+                "custom_tags": {
+                  "ResourceClass": "SingleNode"
+                }
+              }
+            }
+          ]
+        }'
+        

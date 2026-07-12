@@ -100,9 +100,17 @@ Click on any section below to expand and view the interface captures for the Con
 
 </details>
 
-## 7. Future Horizons (Long-Term Vision)
+## 7. Future Horizons (Azure Databricks Roadmap)
 
-While Phase II brings active data quality validation and gatekeeping to the platform, the long-term architectural runway for the AI Governance Control Tower includes:
+To scale the AI Governance Control Tower architecture to enterprise-grade cloud data platforms, the next phases of development will implement native integrations with Azure Databricks across three progressive milestones:
+
+- **Milestone I (Data Posture):** Implementing Unity Catalog 3-level namespaces and automated column-level lineage tracking across the Medallion architecture. See [ADR-004: Unity Catalog Enterprise Data Layout](architecture-decisions/ADR-004-unity-catalog.md) for full architectural trade-offs.
+- **Milestone II (Quality Gates):** Deploying Databricks Lakehouse Monitoring and SQL Alert notification loops for automated quarantine triggers.
+- **Milestone III (GenAI Runtime Guardrails):** Integrating Unity AI Gateway service policies to enforce prompt/response content boundaries on serving endpoints.
+
+### Long-Term Vision
+
+Beyond the Databricks ecosystem integration, the ultimate platform runway includes:
 
 - **Advanced Model Observability:** Incorporating statistical drift detection and automated performance degradation monitoring.
 - **Programmatic Trust & Safety:** Deep integration of Explainable AI (XAI metrics) and algorithmic fairness checks natively into the execution pipeline.

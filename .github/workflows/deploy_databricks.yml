@@ -23,21 +23,29 @@ jobs:
     - name: Setup Databricks CLI
       uses: databricks/setup-cli@main
 
-# Tells Databricks to pull the latest main branch commit natively using active Azure tokens
+# Tells Databricks to automatically clone or update the live Git folder natively
     - name: Sync Git Folder in Databricks Workspace
       env:
-        DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }} # Or secrets.DATABRICKS_HOST based on where you saved it
+        DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
       run: |
         # 1. Fetch a live access token from the active Azure Login session
         ARM_TOKEN=$(az account get-access-token --resource 2ff814a6-3304-4ab8-85cb-cd0e6f879c1d --query accessToken --output tsv)
         
-        # 2. Feed the token into the Databricks environment variables explicitly
         export DATABRICKS_AUTH_TYPE="pat"
         export DATABRICKS_TOKEN=$ARM_TOKEN
         
-        # 3. Execute the git pull command securely
-        databricks repos update /Workspace/Shared/ai-governance-control-tower --branch main
+        REPO_PATH="/Workspace/Shared/ai-governance-control-tower"
         
+        # 2. Check if the Git Folder already exists in the Workspace
+        if databricks repos get $REPO_PATH > /dev/null 2>&1; then
+          echo "🔄 Git folder found! Pulling latest main branch changes..."
+          databricks repos update $REPO_PATH --branch main
+        else
+          echo "🚀 First time deployment! Natively cloning repository into Shared space..."
+          # Replace the URL below with your exact GitHub repository HTTPS URL
+          databricks repos create $REPO_PATH --url https://github.com/your-username/ai-governance-control-tower.git --provider gitHub
+        fi
+                
     # Step 2: Trigger the execution on a one-time single-node cluster
     - name: Run Catalog Initialization Script
       env:

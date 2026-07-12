@@ -23,12 +23,12 @@ jobs:
     - name: Setup Databricks CLI
       uses: databricks/setup-cli@main
 
-# Step 1: Push the local directory directly to the native Shared root folder
-    - name: Deploy Scripts to Databricks Workspace
+# Tells Databricks to pull the latest main branch commit natively into your Shared folder
+    - name: Sync Git Folder in Databricks Workspace
       env:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       run: |
-        databricks workspace import-dir ./src/databricks /Shared/aigct/src/databricks --overwrite
+        databricks repos update /Workspace/Shared/ai-governance-control-tower --branch main        
         
     # Step 2: Trigger the execution on a one-time single-node cluster
     - name: Run Catalog Initialization Script

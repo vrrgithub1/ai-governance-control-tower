@@ -56,7 +56,7 @@ jobs:
         export DATABRICKS_AUTH_TYPE="pat"
         export DATABRICKS_TOKEN=$ARM_TOKEN
 
-        # 2. Submit a completely self-contained, ad-hoc task payload
+        # 2. Submit using the modern serverless schema configuration
         databricks jobs submit --json '{
           "run_name": "AIGCT-Catalog-Mesh-Initialization",
           "tasks": [
@@ -65,9 +65,20 @@ jobs:
               "spark_python_task": {
                 "python_file": "/Workspace/Shared/ai-governance-control-tower/src/databricks/pipeline_orchestration/init_catalog.py"
               },
-              "spark_version": "14.3.x-scala2.12",
-              "node_type_id": "Standard_D4ds_v5",
-              "num_workers": 0
+              "environment_key": "Default-Serverless-Runtime"
+            }
+          ],
+          "environments": [
+            {
+              "environment_key": "Default-Serverless-Runtime",
+              "spec": {
+                "client": "1.0.0",
+                "dependencies": {
+                  "pypi": {
+                    "package_dependencies": []
+                  }
+                }
+              }
             }
           ]
-        }'        
+        }'

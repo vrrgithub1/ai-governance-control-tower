@@ -42,10 +42,10 @@ jobs:
           databricks repos update $REPO_PATH --branch main
         else
           echo "🚀 First time deployment! Natively cloning repository into Shared space..."
-          # Replace the URL below with your exact GitHub repository HTTPS URL
-          databricks repos create $REPO_PATH --url https://github.com/your-username/ai-governance-control-tower.git --provider gitHub
+          # Pass the URL and Provider first, then pass the target directory path using --path
+          databricks repos create https://github.com/vrrgithub1/ai-governance-control-tower.git github --path $REPO_PATH
         fi
-                
+
     # Step 2: Trigger the execution on a one-time single-node cluster
     - name: Run Catalog Initialization Script
       env:

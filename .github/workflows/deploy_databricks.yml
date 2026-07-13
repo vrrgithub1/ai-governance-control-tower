@@ -53,7 +53,7 @@ jobs:
           pip install azure-storage-file-datalake azure-identity
           
           echo "📡 Executing local python transaction generator..."
-          python src/databricks/pipeline_orchestration/raw_generator.py
+          python $GITHUB_WORKSPACE/src/databricks/pipeline_orchestration/raw_generator.py
 
       # STEP 3: Execute the Serverless Spark Task to Ingest Data Into the Bronze Schema
       - name: Stream Raw Data to Bronze Delta Table

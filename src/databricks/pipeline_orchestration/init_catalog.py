@@ -1,28 +1,39 @@
-# --- src/databricks/pipeline_orchestration/init_catalog.py ---
+# init_catalog.py
 from pyspark.sql import SparkSession
 
+# Initialize Spark Session
 spark = SparkSession.builder.getOrCreate()
 
-# Explicitly target your new US-based infrastructure
-storage_account = "saigctdatastor" 
-container = "main" 
-storage_base = f"abfss://{container}@{storage_account}.dfs.core.windows.net"
+# 1. Define your target workspace catalog
+TARGET_CATALOG = "adb_governance_control"
 
-print(f"🚀 Initializing AIGCT Data Architecture on storage: {storage_account}")
-
-catalogs = {
-    "aigct_dev": f"{storage_base}/unity/dev",
-    "aigct_prod": f"{storage_base}/unity/prod",
-    "aigct_governance": f"{storage_base}/unity/governance"
-}
-
-for catalog_name, storage_path in catalogs.items():
-    spark.sql(f"CREATE CATALOG IF NOT EXISTS {catalog_name} MANAGED LOCATION '{storage_path}';")
-    print(f"✅ Catalog '{catalog_name}' verified/created at {storage_path}.")
+# 2. Define the new schema matrix structured by environment prefix
+schemas_to_create = [
+    # Development Environment Layers
+    "dev_banking_bronze",
+    "dev_banking_silver",
+    "dev_banking_gold",
     
-    if "governance" not in catalog_name:
-        for layer in ["banking_bronze", "banking_silver", "banking_gold"]:
-            spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog_name}.{layer};")
-            print(f"  🧱 Schema {catalog_name}.{layer} verified/created.")
+    # Production Environment Layers
+    "prod_banking_bronze",
+    "prod_banking_silver",
+    "prod_banking_gold",
+    
+    # Governance & Control Layer
+    "gov_control_tower"
+]
 
-print("🏁 Data mesh setup completed successfully!")
+print(f"🚀 Starting schema initialization under catalog: '{TARGET_CATALOG}'...")
+
+# 3. Explicitly set the session context to your workspace catalog
+spark.sql(f"USE CATALOG {TARGET_CATALOG};")
+
+# 4. Loop through and provision the schemas safely
+for schema_name in schemas_to_create:
+    try:
+        spark.sql(f"CREATE SCHEMA IF NOT EXISTS {schema_name};")
+        print(f"✅ Schema '{TARGET_CATALOG}.{schema_name}' verified/created successfully.")
+    except Exception as e:
+        print(f"❌ Failed to create schema '{schema_name}'. Error: {str(e)}")
+
+print("🎉 Data mesh schema reorganization complete!")

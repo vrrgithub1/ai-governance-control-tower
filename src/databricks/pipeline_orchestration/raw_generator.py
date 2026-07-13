@@ -2,7 +2,7 @@
 import json
 import random
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from azure.identity import DefaultAzureCredential
 from azure.storage.filedatalake import DataLakeServiceClient
 
@@ -20,7 +20,7 @@ def generate_mock_transactions(num_records=10):
             "status": random.choice(statuses),
             # Old line: "timestamp": datetime.utcnow().isoformat() + "Z"
             # Replace with this clean, timezone-aware UTC format:
-            "timestamp": datetime.now(datetime.timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         })
     return records
 

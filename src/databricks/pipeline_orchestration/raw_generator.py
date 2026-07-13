@@ -18,7 +18,9 @@ def generate_mock_transactions(num_records=10):
             "amount": round(random.uniform(5.0, 2500.0), 2),
             "transaction_type": random.choice(tx_types),
             "status": random.choice(statuses),
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            # Old line: "timestamp": datetime.utcnow().isoformat() + "Z"
+            # Replace with this clean, timezone-aware UTC format:
+            "timestamp": datetime.now(datetime.timezone.utc).isoformat()
         })
     return records
 
@@ -52,4 +54,3 @@ def upload_to_adls():
 
 if __name__ == "__main__":
     upload_to_adls()
-    

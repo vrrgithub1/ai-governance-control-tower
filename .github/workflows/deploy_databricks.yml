@@ -52,8 +52,17 @@ jobs:
           echo "📦 Installing Azure Data Lake dependencies on runner..."
           pip install azure-storage-file-datalake azure-identity
           
-          echo "📡 Executing local python transaction generator..."
-          python $GITHUB_WORKSPACE/src/databricks/pipeline_orchestration/raw_generator.py
+          echo "📡 Dynamically locating and executing raw_generator.py..."
+          # This finds the exact file path regardless of the folder nesting layout
+          SCRIPT_PATH=$(find . -name "raw_generator.py" -print -quit)
+          
+          if [ -z "$SCRIPT_PATH" ]; then
+            echo "❌ Error: Could not find raw_generator.py anywhere in the workspace!"
+            exit 1
+          fi
+          
+          echo "📍 Found script at: $SCRIPT_PATH"
+          python "$SCRIPT_PATH"
 
       # STEP 3: Execute the Serverless Spark Task to Ingest Data Into the Bronze Schema
       - name: Stream Raw Data to Bronze Delta Table

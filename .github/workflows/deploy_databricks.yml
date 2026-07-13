@@ -50,7 +50,7 @@ jobs:
       - name: Land Raw Files in Azure Data Lake
         run: |
           echo "📦 Installing Azure Data Lake dependencies on runner..."
-          pip install azure-storage-filedatalake azure-identity
+          pip install azure-storage-file-datalake azure-identity
           
           echo "📡 Executing local python transaction generator..."
           python src/databricks/pipeline_orchestration/raw_generator.py

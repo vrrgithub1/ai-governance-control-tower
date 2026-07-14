@@ -73,11 +73,6 @@ jobs:
           export DATABRICKS_AUTH_TYPE="pat"
           export DATABRICKS_TOKEN=$ARM_TOKEN
 
-          echo "🔨 Forcing external location storage credential update to clear queue locks..."
-          databricks external-locations update saigct_root_location \
-            --credential-name "saigct_root_location_azuremanagedidentity_1783986441295" \
-            --force
-
           echo "🚀 Submitting serverless Auto Loader ingestion task to Databricks..."
           databricks jobs submit --json '{
             "run_name": "AIGCT-Bronze-Ingestion",

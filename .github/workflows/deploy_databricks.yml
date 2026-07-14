@@ -95,3 +95,36 @@ jobs:
               }
             ]
           }'
+
+      # STEP 4: Execute the Serverless Spark Task to Transform Data from Bronze to Silver
+      - name: Transform Bronze Delta Table to Silver
+        env:
+          DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
+        run: |
+          # 🆕 Dynamically pulling the target resource ID from your secure repository configuration variables:
+          ARM_TOKEN=$(az account get-access-token --resource ${{ vars.AZURE_ACCESS_CONNECTOR_ID }} --query accessToken --output tsv)
+          export DATABRICKS_AUTH_TYPE="pat"
+          export DATABRICKS_TOKEN=$ARM_TOKEN
+
+          echo "🚀 Submitting serverless Silver transformation task to Databricks..."
+          databricks jobs submit --json '{
+            "run_name": "AIGCT-Silver-Transformation",
+            "tasks": [
+              {
+                "task_key": "transform_bronze_to_silver",
+                "spark_python_task": {
+                  "python_file": "/Workspace/Shared/ai-governance-control-tower/src/databricks/pipeline_orchestration/transform_to_silver.py"
+                },
+                "environment_key": "Serverless-Ingestion-Env"
+              }
+            ],
+            "environments": [
+              {
+                "environment_key": "Serverless-Ingestion-Env",
+                "spec": {
+                  "client": "1.0.0",
+                  "dependencies": []
+                }
+              }
+            ]
+          }'

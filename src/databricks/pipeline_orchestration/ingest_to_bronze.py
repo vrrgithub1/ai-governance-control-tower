@@ -1,6 +1,6 @@
 # ingest_to_bronze.py
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import current_timestamp, input_file_name
+from pyspark.sql.functions import current_timestamp  # ⚠️ Note: removed input_file_name from here
 
 spark = SparkSession.builder.getOrCreate()
 
@@ -12,11 +12,9 @@ TABLE = "transactions"
 STORAGE_ACCOUNT = "saigctdatastor"
 CONTAINER = "main"
 
-# Explicit paths pointing directly to your validated external location setup
 LANDING_PATH = f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/raw/transactions/"
 TABLE_LOCATION = f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/unity/dev_banking_bronze/transactions/"
 CHECKPOINT_PATH = f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/checkpoints/dev_bronze_transactions/"
-# 🆕 Added schema tracking location folder:
 SCHEMA_LOCATION_PATH = f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/schemas/dev_bronze_transactions/"
 
 print(f"🔄 Setting up Auto Loader stream from landing zone: {LANDING_PATH}")
@@ -27,16 +25,16 @@ bronze_stream = (
     .format("cloudFiles")
     .option("cloudFiles.format", "json")
     .option("cloudFiles.inferColumnTypes", "true")
-    # 🆕 The Crucial Fix: provide the missing schema location parameter
     .option("cloudFiles.schemaLocation", SCHEMA_LOCATION_PATH)
     .load(LANDING_PATH)
 )
 
 # 3. Add system metadata attributes for audit tracing and data governance
+# 🆕 Fixed: Swapped input_file_name() for the Unity Catalog compliant '_metadata.file_path'
 enriched_bronze_stream = (
     bronze_stream
     .withColumn("ingest_timestamp", current_timestamp())
-    .withColumn("source_file", input_file_name())
+    .withColumn("source_file", bronze_stream["_metadata.file_path"])
 )
 
 print(f"✍️ Streaming data out to targeted storage table path: {TABLE_LOCATION}")
@@ -47,7 +45,6 @@ query = (
     .format("delta")
     .outputMode("append")
     .option("checkpointLocation", CHECKPOINT_PATH)
-    # The crucial fix: forcing it to create an external table at our location path
     .option("path", TABLE_LOCATION)
     .trigger(availableNow=True) 
     .toTable(f"{CATALOG}.{SCHEMA}.{TABLE}")

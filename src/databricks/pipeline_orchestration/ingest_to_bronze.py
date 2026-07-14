@@ -16,6 +16,8 @@ CONTAINER = "main"
 LANDING_PATH = f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/raw/transactions/"
 TABLE_LOCATION = f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/unity/dev_banking_bronze/transactions/"
 CHECKPOINT_PATH = f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/checkpoints/dev_bronze_transactions/"
+# 🆕 Added schema tracking location folder:
+SCHEMA_LOCATION_PATH = f"abfss://{CONTAINER}@{STORAGE_ACCOUNT}.dfs.core.windows.net/schemas/dev_bronze_transactions/"
 
 print(f"🔄 Setting up Auto Loader stream from landing zone: {LANDING_PATH}")
 
@@ -25,6 +27,8 @@ bronze_stream = (
     .format("cloudFiles")
     .option("cloudFiles.format", "json")
     .option("cloudFiles.inferColumnTypes", "true")
+    # 🆕 The Crucial Fix: provide the missing schema location parameter
+    .option("cloudFiles.schemaLocation", SCHEMA_LOCATION_PATH)
     .load(LANDING_PATH)
 )
 

@@ -1,0 +1,381 @@
+{
+  "datasets": [
+    {
+      "name": "security_monitoring_gold",
+      "displayName": "Security Monitoring Gold",
+      "queryLines": [
+        "SELECT\n",
+        "  *\n",
+        "FROM\n",
+        "  adb_governance_control.core_meta_rules.security_monitoring_gold"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "d836bb8b",
+      "displayName": "Security Audit & Compliance Monitor",
+      "layout": [
+        {
+          "widget": {
+            "name": "policy_violations_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "security_monitoring_gold",
+                  "fields": [
+                    {
+                      "name": "daily(event_time)",
+                      "expression": "DATE_TRUNC(\"DAY\", `event_time`)"
+                    },
+                    {
+                      "name": "count(event_time)",
+                      "expression": "COUNT(`event_time`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`http_status` IN (403)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "DATE_TRUNC(\"DAY\", `event_time`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "⚠️ Policy Violations & Blocked Requests",
+                "showTitle": true,
+                "contentAlignment": "center"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(event_time)",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact"
+                  }
+                },
+                "period": {
+                  "fieldName": "daily(event_time)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "top_blocked_users_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "security_monitoring_gold",
+                  "fields": [
+                    {
+                      "name": "presentation_user_email",
+                      "expression": "`presentation_user_email`"
+                    },
+                    {
+                      "name": "count(event_time)",
+                      "expression": "COUNT(`event_time`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`http_status` IN (403)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Top Users with Blocked Requests",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "presentation_user_email",
+                  "axis": {
+                    "title": "User"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(event_time)",
+                  "axis": {
+                    "title": "Blocked Requests"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 8,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "audit_log_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "security_monitoring_gold",
+                  "fields": [
+                    {
+                      "name": "event_time",
+                      "expression": "`event_time`"
+                    },
+                    {
+                      "name": "presentation_user_name",
+                      "expression": "`presentation_user_name`"
+                    },
+                    {
+                      "name": "action_name",
+                      "expression": "`action_name`"
+                    },
+                    {
+                      "name": "accessed_table",
+                      "expression": "`accessed_table`"
+                    },
+                    {
+                      "name": "http_status",
+                      "expression": "`http_status`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "📋 Master Data Access Compliance Audit Log",
+                "showTitle": true
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "event_time",
+                    "useForSearch": false
+                  },
+                  {
+                    "fieldName": "presentation_user_name",
+                    "useForSearch": true
+                  },
+                  {
+                    "fieldName": "action_name",
+                    "useForSearch": true
+                  },
+                  {
+                    "fieldName": "accessed_table",
+                    "useForSearch": true
+                  },
+                  {
+                    "fieldName": "http_status",
+                    "useForSearch": false
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 12,
+            "height": 10
+          }
+        },
+        {
+          "widget": {
+            "name": "user_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f1807704e91e018465dd57b75d96d4/datasets/01f180772ccd10a08fba0223264f794f_presentation_user_name",
+                "query": {
+                  "datasetName": "security_monitoring_gold",
+                  "fields": [
+                    {
+                      "name": "presentation_user_name",
+                      "expression": "`presentation_user_name`"
+                    },
+                    {
+                      "name": "presentation_user_name_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter by User",
+                "showTitle": true
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "presentation_user_name",
+                    "queryName": "dashboards/01f1807704e91e018465dd57b75d96d4/datasets/01f180772ccd10a08fba0223264f794f_presentation_user_name"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "header_banner",
+            "multilineTextboxSpec": {
+              "lines": [
+                "<div style=\"font-family: 'Orbitron', sans-serif; padding: 4px 0;\">\n",
+                "  <div style=\"font-size: 20px; font-weight: 700; color: #F6AD55; letter-spacing: 0.05em;\">🔐 Security Audit & Compliance Monitor</div>\n",
+                "  <div style=\"font-family: 'Space Grotesk', sans-serif; font-size: 13px; color: #A0AEC0; margin-top: 6px; font-weight: 400; letter-spacing: 0.02em;\">Real-time visibility into data access events, policy violations, and blocked requests</div>\n",
+                "</div>"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 9,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#0F1117",
+        "dark": "#0F1117"
+      },
+      "widgetBackgroundColor": {
+        "light": "#1A1F2E",
+        "dark": "#1A1F2E"
+      },
+      "widgetBorderColor": {
+        "light": "#2D3748",
+        "dark": "#2D3748"
+      },
+      "selectionColor": {
+        "light": "#F6AD55",
+        "dark": "#F6AD55"
+      },
+      "visualizationColors": [
+        "#F6AD55",
+        "#FC8181",
+        "#68D391",
+        "#63B3ED",
+        "#B794F4",
+        "#F687B3",
+        "#4FD1C5",
+        "#FBD38D"
+      ],
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED",
+      "widgetPadding": 16,
+      "widgetMargin": 8,
+      "widgetCornerRadius": 8,
+      "widgetShadow": 20,
+      "fontSettings": {
+        "base": {
+          "fontFamily": "Space Grotesk",
+          "fontColor": {
+            "light": "#E2E8F0",
+            "dark": "#E2E8F0"
+          }
+        },
+        "widgetTitle": {
+          "fontFamily": "Orbitron",
+          "fontColor": {
+            "light": "#F6AD55",
+            "dark": "#F6AD55"
+          },
+          "fontSize": 13,
+          "fontWeight": 600
+        },
+        "widgetDescription": {
+          "fontFamily": "Space Grotesk",
+          "fontColor": {
+            "light": "#A0AEC0",
+            "dark": "#A0AEC0"
+          }
+        },
+        "fieldTitle": {
+          "fontFamily": "Space Grotesk",
+          "fontColor": {
+            "light": "#CBD5E0",
+            "dark": "#CBD5E0"
+          },
+          "fontWeight": 500
+        },
+        "fieldValue": {
+          "fontFamily": "Space Grotesk",
+          "fontColor": {
+            "light": "#E2E8F0",
+            "dark": "#E2E8F0"
+          }
+        }
+      },
+      "gridLineColor": {
+        "light": "#2D3748",
+        "dark": "#2D3748"
+      },
+      "axisLineColor": {
+        "light": "#4A5568",
+        "dark": "#4A5568"
+      }
+    },
+    "applyModeEnabled": false
+  }
+}

@@ -96,12 +96,11 @@ jobs:
             ]
           }'
 
-      # # STEP 4: Execute the Serverless Spark Task to Transform Data from Bronze to Silver
+      # STEP 4: Execute the Serverless Spark Task to Transform Data from Bronze to Silver
       - name: Transform Bronze Delta Table to Silver
         env:
           DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
         run: |
-          # 📑 The fix: Revert the --resource flag to the universal Databricks Application Guid constant
           ARM_TOKEN=$(az account get-access-token --resource 2ff814a6-3304-4ab8-85cb-cd0e6f879c1d --query accessToken --output tsv)
           export DATABRICKS_AUTH_TYPE="pat"
           export DATABRICKS_TOKEN=$ARM_TOKEN
@@ -127,4 +126,4 @@ jobs:
                 }
               }
             ]
-          }'
+          }'          

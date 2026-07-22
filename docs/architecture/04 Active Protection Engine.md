@@ -76,5 +76,29 @@ ALTER TABLE adb_governance_control.gold.customer_features
 ALTER COLUMN email SET MASK adb_governance_control.policies.mask_email;
 ```
 
+### 2. Dynamic Row-Level Security (Data Isolation)
+Row filters evaluate condition predicates against every row returned by a query, restricting visibility based on geographical boundaries, organizational units, or business divisions.
+
+#### SQL Definition: Region Boundary Filter UDF
+
+```SQL
+CREATE OR REPLACE FUNCTION adb_governance_control.policies.filter_by_region(
+    region_code STRING
+)
+RETURNS BOOLEAN
+RETURN 
+    IS_ACCOUNT_GROUP_MEMBER('global_compliance_admins') 
+    OR (IS_ACCOUNT_GROUP_MEMBER('eu_data_analysts') AND region_code = 'EU')
+    OR (IS_ACCOUNT_GROUP_MEMBER('us_data_analysts') AND region_code = 'US');
+```
+
+#### Binding Filter Function to Table
+
+```SQL
+ALTER TABLE adb_governance_control.gold.customer_features 
+SET ROW FILTER adb_governance_control.policies.filter_by_region ON (region_code);
+```
+
+
 
 

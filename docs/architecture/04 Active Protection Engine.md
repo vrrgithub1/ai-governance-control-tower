@@ -50,3 +50,23 @@ graph TD
     class GoldTable dataStyle;
 ```
 
+## Technical Deep-Dive: Policy Implementation
+
+### 1. Dynamic Column Masking (PII Protection)
+Column masking functions dynamically transform or redact specific cell values based on the execution context of ⁠IS_ACCOUNT_GROUP_MEMBER()⁠.
+
+#### SQL Definition: Email Redaction UDF
+
+```SQL
+CREATE OR REPLACE FUNCTION adb_governance_control.policies.mask_email(
+    email STRING
+)
+RETURNS STRING
+RETURN IF(
+    IS_ACCOUNT_GROUP_MEMBER('pii_data_access_group') OR IS_ACCOUNT_GROUP_MEMBER('account admins'),
+    email,
+    REGEXP_REPLACE(email, '(^.).*(@.*$)', '$1***$2') -- Transforms 'john.doe@example.com' -> 'j***@example.com'
+);
+```
+
+

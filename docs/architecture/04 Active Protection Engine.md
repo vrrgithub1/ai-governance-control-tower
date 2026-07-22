@@ -69,4 +69,12 @@ RETURN IF(
 );
 ```
 
+#### Binding Masking Function to Table Column
+
+```SQL
+ALTER TABLE adb_governance_control.gold.customer_features 
+ALTER COLUMN email SET MASK adb_governance_control.policies.mask_email;
+```
+
+
 

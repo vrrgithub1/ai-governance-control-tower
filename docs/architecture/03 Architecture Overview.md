@@ -132,4 +132,15 @@ sequenceDiagram
     SysLog->>Dash: Refresh System Audit & Compliance Telemetry
 ```
 
+## Technical Stack Reference
+
+| Component | Technology/Tool | Architectural Purpose |
+| :--- | :--- | :--- |
+| Compute / Lakehouse | Azure Databricks (Photon Runtime) | Scalable engine for ETL, streaming, and model inference. |
+| Governance Engine | Databricks Unity Catalog | Metastore-level access control, lineage, and audit schemas. |
+| Identity Management | Microsoft Entra ID (Azure AD) | Unified SSO, group-based access (RBAC/ABAC), and service principals. |
+| Data Quality Gate | Great Expectations | Active pre-ingestion validation and quarantine routing. |
+| Observability / Drift | Evidently AI + SHAP | Statistical drift tracking, data distribution shifts, and ML explainability. |
+| Experiment Tracking | MLflow | Model versioning, lineage tracking, and artifact registry. |
+| CI/CD & Automation | GitHub Actions + Databricks CLI | GitOps deployment of dashboards (`.lvdash.json`) and notebooks. |
 

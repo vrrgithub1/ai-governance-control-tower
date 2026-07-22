@@ -88,7 +88,7 @@ graph TD
 #### 2. Unity Catalog Security Engine (Active Protection)
 
 - **Identity-Centric Entitlements:** Integrated directly with Microsoft Entra ID service principals and user groups.
-- **Dynamic Row-Level Filtering (RLS) & Column Masking:** Policy functions are applied at the metastore level. Users querying ⁠Gold⁠ layer tables dynamically receive masked PII/SPI attributes based on their session context without creating duplicate physical datasets.
+- **Dynamic Row-Level Filtering (RLS) & Column Masking:** Policy functions are applied at the metastore level. Users querying `⁠Gold`⁠ layer tables dynamically receive masked PII/SPI attributes based on their session context without creating duplicate physical datasets.
 
 ### 3. Continuous Governance & Observability Engine
 
@@ -97,5 +97,9 @@ graph TD
 
 ### 4. Telemetry & GitOps CI/CD Layer
 
-- **Native Audit Logging:** Extracts raw access records and table-level lineage directly from Unity Catalog metastore system schemas (⁠system.access.audit⁠, ⁠system.access.table_lineage⁠).
-- **Dashboards-as-Code:** Telemetry is exposed via declarative Lakeview Dashboards (⁠.lvdash.json⁠), fully deployed and versioned using GitHub Actions.
+- **Native Audit Logging:** Extracts raw access records and table-level lineage directly from Unity Catalog metastore system schemas (⁠`system.access.audit`⁠, `⁠system.access.table_lineage`⁠).
+- **Dashboards-as-Code:** Telemetry is exposed via declarative Lakeview Dashboards (⁠`.lvdash.json`⁠), fully deployed and versioned using GitHub Actions.
+
+
+
+

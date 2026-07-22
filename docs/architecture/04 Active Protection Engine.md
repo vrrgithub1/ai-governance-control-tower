@@ -99,6 +99,34 @@ ALTER TABLE adb_governance_control.gold.customer_features
 SET ROW FILTER adb_governance_control.policies.filter_by_region ON (region_code);
 ```
 
+## Query Execution Lifecycle
+When a query is submitted to the Spark/Photon engine, Unity Catalog intercepts the logical plan before execution:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Caller as Entra ID Identity (User / Service Principal)
+    participant Engine as Spark / Photon Engine
+    participant UC as Unity Catalog Metastore
+    participant Delta as Delta Storage (ADLS Gen2)
+
+    Caller->>Engine: Submit SQL Query (SELECT * FROM gold.customer_features)
+    Engine->>UC: Request Execution Plan & Entitlements
+    
+    rect rgb(30, 41, 59)
+        note over UC: Policy Evaluation Phase
+        UC->>UC: Evaluate IS_ACCOUNT_GROUP_MEMBER()
+        UC->>UC: Inject Dynamic Masking UDFs into Plan
+        UC->>UC: Inject Row-Filter Predicates into Plan
+    end
+
+    UC-->>Engine: Optimized Plan with Applied Security Rules
+    Engine->>Delta: Read Delta Parquet Footprint
+    Delta-->>Engine: Raw Data Payload
+    Engine->>Engine: Apply Inline Row Filters & Masking Transforms
+    Engine-->>Caller: Filtered & Masked Result Set
+```
+
 
 
 

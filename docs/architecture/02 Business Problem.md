@@ -27,25 +27,34 @@ graph TD
     AIBranch --> EUAI["EU AI Act<br><i>(Binding Legislation)</i>"]
     AIBranch --> NIST["NIST AI RMF 1.0<br><i>(Voluntary Risk Framework)</i>"]
 
-    %% EU AI Act Details
-    EUAI --> EU1["High-Risk Logging & Auditability"]
-    EUAI --> EU2["Post-Market Risk Monitoring"]
-    EUAI --> EU3["Technical Documentation & Lineage"]
-
-    %% NIST Details
-    NIST --> N1["Govern & Map: Risk Identification"]
-    NIST --> N2["Measure: Quantitative Risk & Drift"]
-    NIST --> N3["Manage: Active Remediation"]
-
     %% Data Privacy Subnodes
     PrivacyBranch --> GDPR["GDPR<br><i>(EU Consumer Privacy)</i>"]
     PrivacyBranch --> CCPA["CCPA / CPRA<br><i>(US Consumer Privacy)</i>"]
 
-    %% Privacy Details
-    GDPR --> P1["Right to be Forgotten & Erasure"]
-    GDPR --> P2["Purpose Limitation & Data Minimization"]
-    CCPA --> P3["PII / SPI Masking & Consent Tracking"]
-    CPRA --> P4["Zero-Trust Identity Access Control"]
+    %% Subgraphs to force 3rd-level leaf nodes to align VERTICALLY (TB)
+    subgraph EU_Group [" "]
+        direction TB
+        EU1["High-Risk Logging & Auditability"] --> EU2["Post-Market Risk Monitoring"] --> EU3["Technical Documentation & Lineage"]
+    end
+    EUAI --> EU1
+
+    subgraph NIST_Group [" "]
+        direction TB
+        N1["Govern & Map: Risk Identification"] --> N2["Measure: Quantitative Risk & Drift"] --> N3["Manage: Active Remediation"]
+    end
+    NIST --> N1
+
+    subgraph GDPR_Group [" "]
+        direction TB
+        P1["Right to be Forgotten & Erasure"] --> P2["Purpose Limitation & Data Minimization"]
+    end
+    GDPR --> P1
+
+    subgraph CCPA_Group [" "]
+        direction TB
+        P3["PII / SPI Masking & Consent Tracking"] --> P4["Zero-Trust Identity Access Control"]
+    end
+    CCPA --> P3
 
     %% Styling
     classDef default fill:#1f2937,stroke:#4b5563,stroke-width:1px,color:#f3f4f6;
@@ -55,7 +64,12 @@ graph TD
 
     class Root rootStyle;
     class AIBranch,EUAI,NIST aiStyle;
-    class PrivacyBranch,GDPR,CCPA,CPRA privacyStyle;
+    class PrivacyBranch,GDPR,CCPA privacyStyle;
+    
+    style EU_Group fill:none,stroke:none;
+    style NIST_Group fill:none,stroke:none;
+    style GDPR_Group fill:none,stroke:none;
+    style CCPA_Group fill:none,stroke:none;
 ```
 
 ### 1. The EU AI Act

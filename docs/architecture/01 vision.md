@@ -12,17 +12,39 @@ By shifting governance left, AIGCT transforms data governance from a passive adm
 
 ## Strategic Objectives & North Star Metrics
 
-AIGCT is designed to deliver measurable strategic value across three core pillars:
+AIGCT is designed to deliver measurable strategic value across four core pillars:
 
 | Pillar | Strategic Goal | Key Performance Indicator (KPI) |
 | :--- | :--- | :--- |
 | **Active Protection** | Zero unauthorized data exposure via dynamic access controls | **0** static physical data masks; **100%** runtime identity-based obfuscation. |
 | **Audit Readiness** | Instant, zero-friction compliance reporting | **< 1 minute** to reconstruct end-to-end data/model lineage via system telemetry. |
 | **Operational Health** | Proactive risk mitigation before downstream predictions fail | **100%** quarantine isolation for data failing quality gates prior to Gold processing. |
+| **Continuous Governance** | Real-time policy, configuration, and drift monitoring across the lifecycle | Automated detection & alerting for model/feature drift and unmapped Unity Catalog assets within 1 execution cycle. |
 
 ---
 
 ## Target Personas & Value Proposition
 
 AIGCT provides a unified control plane tailored to the distinct needs of key enterprise stakeholders:
+
+<img width="791" height="253" alt="image" src="https://github.com/user-attachments/assets/7cac6f2e-e791-4e40-b772-0faae9f8e312" />
+
+### 1. Chief Information Security Officer (CISO) & Compliance Officers
+
+- **Problem:** Lack of visibility into fine-grained data usage, hidden PII leakage, and manual audit log collation.
+- **AIGCT Value:** Centralized, zero-trust telemetry using Unity Catalog system schemas (`system.access.audit`), providing real-time visibility into who accessed what data, when, and for what purpose.
+
+
+### 2. MLOps & Data Science Teams
+
+- **Problem:** Silent model degradation, undetected feature drift, and black-box predictions that fail regulatory scrutinies.
+- **AIGCT Value:** Automated model drift detection (via Evidently AI) and explainability pipelines (via SHAP) running directly against model execution logs.
+
+
+### 3. Data Engineers & Platform Architects
+
+- **Problem:** Complex, hard-coded access control lists (ACLs), duplicate masked datasets, and fragile deployment pipelines.
+- **AIGCT Value:** Declarative **Dashboard-as-Code** workflows (`.lvdash.json`), unified Medallion architecture with automated quarantine routing, and dynamic row/column-level masking policies.
+
+  
 

@@ -131,6 +131,13 @@ sequenceDiagram
 
 Access behavior across identity tiers within the AIGCT ecosystem is governed according to the following control matrix:
 
+| Persona / Identity Type | Entra ID Group | Row Filter Behavior | Column Masking Behavior |
+| :--- | :--- | :--- | :--- |
+| ML Training Pipeline | spn-aigct-mlops-runner | Full Access (All Regions) | Unmasked Access (Raw Features) |
+| Compliance Officer | global_compliance_admins | Full Access (All Regions) | Unmasked Access (Raw PII) |
+| EU Data Analyst | eu_data_analysts | Constrained to region_code = 'EU' | Masked ( j***@example.com ) |
+| US Data Analyst | us_data_analysts | Constrained to region_code = 'US' | Masked ( j***@example.com ) |
+| Unmapped User | None | 0 Rows Returned | Access Denied / All Masked |
 
 
 

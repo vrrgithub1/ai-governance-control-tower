@@ -14,20 +14,48 @@ The **AI Governance Control Tower (AIGCT)** addresses this gap directly by unify
 
 The global regulatory environment has shifted from soft guidelines to enforceable legal mandates with strict financial and criminal liabilities. AIGCT directly addresses key compliance requirements across major frameworks:
 
-```text
-┌────────────────────────────────────────────────┐
-│          Global Regulatory Frameworks          │
-└───────────────────────┬────────────────────────┘
-│
-┌──────────────────────────────────┴──────────────────────────────────┐
-▼                                                                     ▼
-┌──────────────┐                                                      ┌──────────────┐
-│  EU AI Act   │                                                      │ NIST AI RMF  │
-└──────┬───────┘                                                      └──────┬───────┘
-│                                                                     │
-├─► High-Risk AI System Logging                                       ├─► Map: Risk Identification & Context
-├─► Risk Management & Human Oversight                                 ├─► Measure: Quantitative Risk & Drift
-└─► Technical Documentation & Lineage                                 └─► Manage: Active Remediation & Isolation
+```mermaid
+graph TD
+    %% Main Title / Node
+    Root["Global Regulatory & Compliance Landscape"]
+
+    %% Primary Branches
+    Root --> AIBranch["AI Governance & Risk Frameworks"]
+    Root --> PrivacyBranch["Data Privacy & Protection Regulations"]
+
+    %% AI Governance Subnodes
+    AIBranch --> EUAI["EU AI Act<br><i>(Binding Legislation)</i>"]
+    AIBranch --> NIST["NIST AI RMF 1.0<br><i>(Voluntary Risk Framework)</i>"]
+
+    %% EU AI Act Details
+    EUAI --> EU1["High-Risk Logging & Auditability"]
+    EUAI --> EU2["Post-Market Risk Monitoring"]
+    EUAI --> EU3["Technical Documentation & Lineage"]
+
+    %% NIST Details
+    NIST --> N1["Govern & Map: Risk Identification"]
+    NIST --> N2["Measure: Quantitative Risk & Drift"]
+    NIST --> N3["Manage: Active Remediation"]
+
+    %% Data Privacy Subnodes
+    PrivacyBranch --> GDPR["GDPR<br><i>(EU Consumer Privacy)</i>"]
+    PrivacyBranch --> CCPA["CCPA / CPRA<br><i>(US Consumer Privacy)</i>"]
+
+    %% Privacy Details
+    GDPR --> P1["Right to be Forgotten & Erasure"]
+    GDPR --> P2["Purpose Limitation & Data Minimization"]
+    CCPA --> P3["PII / SPI Masking & Consent Tracking"]
+    CPRA --> P4["Zero-Trust Identity Access Control"]
+
+    %% Styling
+    classDef default fill:#1f2937,stroke:#4b5563,stroke-width:1px,color:#f3f4f6;
+    classDef rootStyle fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#ffffff;
+    classDef aiStyle fill:#065f46,stroke:#10b981,stroke-width:1px,color:#ffffff;
+    classDef privacyStyle fill:#7c2d12,stroke:#f97316,stroke-width:1px,color:#ffffff;
+
+    class Root rootStyle;
+    class AIBranch,EUAI,NIST aiStyle;
+    class PrivacyBranch,GDPR,CCPA,CPRA privacyStyle;
 ```
 
 ### 1. The EU AI Act

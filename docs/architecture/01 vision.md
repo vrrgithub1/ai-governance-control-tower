@@ -46,5 +46,27 @@ AIGCT provides a unified control plane tailored to the distinct needs of key ent
 - **Problem:** Complex, hard-coded access control lists (ACLs), duplicate masked datasets, and fragile deployment pipelines.
 - **AIGCT Value:** Declarative **Dashboard-as-Code** workflows (`.lvdash.json`), unified Medallion architecture with automated quarantine routing, and dynamic row/column-level masking policies.
 
+### 4. Continuous Governance & Adaptive Policy Lifecycle
+Governance is not a static state achieved at deployment; it is a continuous runtime process. AIGCT continuously evaluates environmental changes, schema updates, model performance, and regulatory updates:
+* **Drift & Anomaly Response:** Models and incoming features are perpetually evaluated against baseline training parameters to flag statistical drift (Evidently AI) and trigger dynamic retraining or isolation alerts before non-compliant outputs reach consumers.
+* **Declarative Configuration Tracking:** System access rules, entitlement mappings, and dashboard definitions are subjected to continuous validation via GitOps workflows, ensuring production environments never deviate from verified source-of-truth configurations.
   
+## Core Architectural Principles
+
+AIGCT is built upon five foundational architectural tenets:
+
+### 1. Shift Left Governance
+Governance is integrated directly into data ingestion and pipeline execution.  Quality validation, lineage capturing, and policy enforcement occur automatically in-flight rather than as a post-hoc audit step.
+
+### 2. Zero-Trust Access Control
+Identity is the perimeter. Data access is governed by dynamic column masks and row-level security policies evaluated at query execution time based on user group context (e.g., Microsoft Entra ID), eliminating the need for duplicate, pre-masked physical storage layers.
+
+### 3. Metadata-Driven Automation
+System logs and metastore metadata are treated as first-class data assets. By tapping directly into Unity Catalog's system schemas (`system.access.audit` and `system.access.table_lineage`), the platform generates real-time telemetry and lineage without third-party agents.
+
+### 4. GitOps & Declarative Lifecycle Management
+All platform artifacts-including transformation code, security policies, and executive dashboards are defined as code. Lakeview dashboards are serialized to `.lvdash.json` files and deployed strictly through automated CI/CD pipelines using GitHub Actions.
+
+### 5. Automated Data Sanitation & Isolation
+Corrupt, invalid, or drifted payloads are automatically routed to a dedicated **Quarantine Layer** using automated data quality gates (Great Expectations). This prevents low-quality or non-compliant data from polluting downstream analytics or retraining Gold-layer models.
 

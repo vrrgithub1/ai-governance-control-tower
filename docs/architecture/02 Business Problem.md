@@ -43,4 +43,33 @@ The global regulatory environment has shifted from soft guidelines to enforceabl
 - **Operational Challenge:** Enforcing "Right to be Forgotten," strict Purpose Limitation, and preventing unauthorized Sensitive Personal Information (SPI/PII) exposure to internal model developers and external prompt interfaces.
 - **AIGCT Solution:** Identity-centric Dynamic Column Masking and Row-Level Security (RLS) driven by Microsoft Entra ID groups, eliminating static duplicated tables and enforcing zero-trust data access at runtime.
 
+## Core Operational & Technical Pain Points
+
+Beyond legal mandates, platform engineering and data science teams encounter significant operational friction when operating without a centralized governance control tower:
+
+### 1. Passive, Post-Hoc Auditing ("The Governance Black Hole")
+- **Problem:** Compliance auditing is traditionally reactive. When an audit occurs, data teams spend weeks manually piecing together CSV logs, workspace notebooks, and access records to figure out *who* accessed *what* data to train *which* version of the model.
+- **Impact:** High engineering overhead, delayed compliance reporting, and elevated risk of unrecorded access breaches.
+
+### 2. "Silent" Model Degradation & Feature Drift
+- **Problem:** Machine Learning models in production degrade silently as real-world data distribution strays from training baselines. Without automated statistical checks, corrupted or drifted features silently feed production predictions.
+- **Impact:** Flawed business decisions, unfair or biased algorithmic outcomes, and loss of customer trust.
+
+### 3. Data Duplication & Perimeter Security Flaws
+- **Problem:** To prevent unauthorized users from viewing PII, teams frequently create duplicate, statiscally masked datasets (e.g., `customer_data_anonymized_v2`).
+- **Impact:** "Data Sprawl," exponential storage costs, sync latency, and increased risk of forgotten, unmonitored data copies leaking sensitive information.
+
+### 4. Manual Deployment Bottlenecks & Configuration Drift
+- **Problem:** Governance rules, access control lists (ACLs), and monitoring dashboards are often configured manually in workspace UIs, leading to environment drift between Dev, Staging, and Production.
+- **Impact:** Inconsistent enforcement across environments and high vulnerability to human error during manual deployments.
+
+## The AIGCT Value Proposition: Before vs After
+
+| Capability | Traditional Governance Approach | AIGCT Architectural Approach |
+| :--- | :--- | :--- |
+| **Access Control** | Static ACLs, hardcoded data masks, and physical table copies. | **Dynamic Zero-Trust:** Dynamic row filtering & column masking enforced at runtime based on Entra ID context. |
+| **Audit & Lineage** | Manual log collation from disparate infrastructure sources. | **Automated Telemetry:** Native extraction from Unity Catalog system schemas (`system.access`). |
+| **Data Quality & Isolation** | Post-ingestion manual reviews or failing silent downstream models. | **Active Quarantine:** In-flight validation (Great Expectations) routing corrupt data to quarantine layers. |
+| **Model Observability** | Ad-hoc Python notebooks run manually by data scientists. | **Continuous Governance:** Automated feature drift (Evidently AI) and SHAP explainability pipelines. |
+| **Lifecycle Deployment** | Manual UI botton-clicks and workspace-specific configurations. | **GitOps & IaC:** Complete **Dashboard-as-Code** (`.lvdash.json`) deployed via GitHub Actions CI/CD. |
 

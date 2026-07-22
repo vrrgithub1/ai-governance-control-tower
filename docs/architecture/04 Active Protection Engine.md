@@ -127,6 +127,10 @@ sequenceDiagram
     Engine-->>Caller: Filtered & Masked Result Set
 ```
 
+## Identity & Group Mapping Matrix
+
+Access behavior across identity tiers within the AIGCT ecosystem is governed according to the following control matrix:
+
 
 
 

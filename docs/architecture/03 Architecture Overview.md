@@ -100,5 +100,36 @@ graph TD
 - **Dashboards-as-Code:** Telemetry is exposed via declarative Lakeview Dashboards (⁠`.lvdash.json`⁠), fully deployed and versioned using GitHub Actions.
 
 
+## Data & Telemetry Lifecycle Flow
+
+The flow below illustrates how raw data transitions into audited insights while enforcing all 4 AIGCT pillars:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User/Model as Entra ID User / Pipeline
+    participant Ingest as Data Ingestion Gate
+    participant UC as Unity Catalog Metastore
+    participant SysLog as System Audit Schemas
+    participant Obs as Evidently & SHAP Engine
+    participant Dash as Lakeview Dashboard
+
+    User/Model->>Ingest: Push Data Payload
+    Ingest->>Ingest: Validate via Great Expectations
+    alt Quality Gate Fails
+        Ingest-->>User/Model: Route to Quarantine & Alert
+    else Quality Gate Passes
+        Ingest->>UC: Write to Delta Lake (Silver/Gold)
+    end
+
+    User/Model->>UC: Execute SQL / Model Inference
+    UC->>UC: Apply Dynamic Row Filters & Column Masks
+    UC->>SysLog: Emit Audit Telemetry (system.access)
+    
+    UC->>Obs: Run Scheduled Drift & Explainability Check
+    Obs-->>User/Model: Trigger Alert if Drift Threshold Exceeded
+    
+    SysLog->>Dash: Refresh System Audit & Compliance Telemetry
+```
 
 

@@ -17,7 +17,7 @@ graph TD
     %% Main Layout Direction
     direction TB
 
-    %% Layer 1: Ingestion & In-Flight
+    %% Layer 1: Ingestion
     subgraph L1 ["1. Ingestion & In-Flight Isolation Layer"]
         direction TB
         RawData["Raw Landing Zone<br><i>(Blob / ADLS Gen2)</i>"]
@@ -25,7 +25,7 @@ graph TD
         Quarantine["Quarantine Storage<br><i>(Non-compliant payloads)</i>"]
         
         RawData --> GE_Gate
-        GE_Gate -- "Fails Validation" --> Quarantine
+        GE_Gate -- "Fails Assertions" --> Quarantine
     end
 
     %% Layer 2: Unity Catalog Core
@@ -61,11 +61,10 @@ graph TD
         CI_CD --> Dashboards
     end
 
-    %% Cross-Layer Flows
-    GE_Gate -- "Passes Validation" --> Medallion
-    Medallion --> Evidently
-    Medallion --> SHAP
-    Medallion --> SysSchema
+    %% Clear Inter-Layer Dependencies (Layer-to-Layer Flows)
+    L1 -- "Clean Data Payload" --> L2
+    L2 -- "Feature & Inference Data" --> L3
+    L2 -- "Audit Logs & Lineage Telemetry" --> L4
 
     %% Styling
     classDef l1Style fill:#1e293b,stroke:#3b82f6,color:#f8fafc;

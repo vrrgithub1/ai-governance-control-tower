@@ -36,7 +36,7 @@ The global regulatory environment has shifted from soft guidelines to enforceabl
 - **AIGCT Solution:** Native, immutable audit logging via Unity Catalog (`system.access.audit`), end-to-end lineage tracing (`system.access.table_lineage`), and automated quarantine routing for out-of-bounds data payloads.
 
 ### 2. NIST AI Risk Management Framework (AI RMF 1.0)
-- **Operational Challenge:** Requires continuous assessment across four core functions: *Govern, Map, Measure,*. Organizations often struggle to transition "Measure" and "Manage" from static documentation to automated technical controls.
+- **Operational Challenge:** Requires continuous assessment across four core functions: *Govern, Map, Measure,* and *Manage*. Organizations often struggle to transition "Measure" and "Manage" from static documentation to automated technical controls.
 - **AIGCT Solution:** Operationalizes the NIST framework directly inside Azure Databricks by embedding automated data quality testing (Great Expectations), feature drift monitoring (Evidently AI), and explainability (SHAP) into daily pipeline runs.
 
 ### 3. Data Privacy Regulations (GDPR, CCPA, CPRA)

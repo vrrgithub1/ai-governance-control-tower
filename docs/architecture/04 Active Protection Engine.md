@@ -139,5 +139,8 @@ Access behavior across identity tiers within the AIGCT ecosystem is governed acc
 | US Data Analyst | us_data_analysts | Constrained to region_code = 'US' | Masked ( j***@example.com ) |
 | Unmapped User | None | 0 Rows Returned | Access Denied / All Masked |
 
+## Key Benefits for AI & Feature Governance
 
-
+- 1. **Zero Model Contamination:** Feature stores serving downstream inference endpoints inherit these masking rules, preventing unauthorized leakage of sensitive fields into LLM prompt spaces or training sets.
+- 2. **Deterministic Audit Lineage:** All policy evaluations generate telemetry directly within Unity Catalog system schemas (`system.access.audit`), providing immutable proof of compliance for audit readiness.
+- 3. **Seamless GitOps Support:** All policy functions (`CREATE FUNCTION`) and column bindings (`ALTER TABLE`) are declaratively managed as code within CI/CD pipelines (`.sql` scripts version-controlled via GitHub).

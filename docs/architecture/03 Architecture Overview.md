@@ -79,3 +79,23 @@ graph TD
     class SysSchema,Dashboards,CI_CD l4Style;
 ```
 
+## Core Architectural Layers
+
+### 1. Ingestion & Active Isolation Layer
+
+- **Great Expectations In-Flight Quality Gates:** Raw data entering the Lakehouse passes through automated expectation suites. Any payload failing schemas or business assertions is automatically diverted to a isolated Quarantine Lakehouse for review, preventing downstream model contamination.
+
+#### 2. Unity Catalog Security Engine (Active Protection)
+
+- **Identity-Centric Entitlements:** Integrated directly with Microsoft Entra ID service principals and user groups.
+- **Dynamic Row-Level Filtering (RLS) & Column Masking:** Policy functions are applied at the metastore level. Users querying ⁠Gold⁠ layer tables dynamically receive masked PII/SPI attributes based on their session context without creating duplicate physical datasets.
+
+### 3. Continuous Governance & Observability Engine
+
+- **Statistical Feature & Model Drift:** Evidently AI evaluates production feature distributions against baseline training sets to detect covariance shift and feature degradation.
+- **Explainability (SHAP) & MLflow Registry:** Every production prediction is tracked alongside model lineage and SHAP feature importance values in MLflow.
+
+### 4. Telemetry & GitOps CI/CD Layer
+
+- **Native Audit Logging:** Extracts raw access records and table-level lineage directly from Unity Catalog metastore system schemas (⁠system.access.audit⁠, ⁠system.access.table_lineage⁠).
+- **Dashboards-as-Code:** Telemetry is exposed via declarative Lakeview Dashboards (⁠.lvdash.json⁠), fully deployed and versioned using GitHub Actions.

@@ -54,3 +54,36 @@ graph TD
     class Quarantine,AlertSystem quarantineStyle;
 ```
 
+## Processing Sequence & Circuit Breaker Logic
+
+The step-by-step validation lifecycle operates synchronously during batch ingestion or as a micro-batch trigger in streaming pipelines:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Pipeline as Ingestion Job / Orchestrator
+    participant Landing as ADLS Gen2 Landing Zone
+    participant GE as Great Expectations Engine
+    participant Bronze as UC Bronze Delta Table
+    participant Quarant as Quarantine Storage
+
+    Pipeline->>Landing: Detect New Inbound Payload
+    Pipeline->>GE: Trigger Validation Suite Execution
+    
+    rect rgb(30, 41, 59)
+        note over GE: Evaluate Data Expectations
+        GE->>GE: Check Schema Compliance
+        GE->>GE: Check Null Counts & Value Ranges
+        GE->>GE: Evaluate Business Rules & Regex
+    end
+
+    alt All Critical Expectations Pass
+        GE-->>Pipeline: Validation Succeeded
+        Pipeline->>Bronze: Append Clean Data Payload
+    else Any Critical Expectation Fails
+        GE-->>Pipeline: Validation Failed (Raise Circuit Breaker)
+        Pipeline->>Quarant: Divert Payload + Error Logs
+        Pipeline->>Pipeline: Trigger Notification & Log Failure Telemetry
+    end
+```
+

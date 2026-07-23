@@ -90,3 +90,45 @@ sequenceDiagram
     end
 ```
 
+## Technical Deep-Dive: Drift and Explainability Implementation
+
+### 1. Statistical Drift Detection with Evidently AI
+
+Data drift compares current production inference logs against a reference dataset (e.g., the training baseline).
+
+```Python
+import pandas as pd
+from datetime import datetime, timedelta
+from evidently.report import Report
+from evidently.metric_preset import DataDriftPreset, TargetDriftPreset
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.getOrCreate()
+
+# 1. Fetch Reference (Training Data) and Current (Inference Logs)
+reference_df = spark.table("adb_governance_control.gold.baseline_features").toPandas()
+
+# Fetch last 7 days of inference payload logs
+current_df = spark.table("adb_governance_control.gold.inference_logs") \
+    .filter(f"timestamp >= '{datetime.now() - timedelta(days=7)}'") \
+    .toPandas()
+
+# 2. Configure and Run Evidently Drift Report
+data_drift_report = Report(metrics=[
+    DataDriftPreset(drift_share=0.2), # Alert if >20% of features drift
+    TargetDriftPreset()
+])
+
+data_drift_report.run(reference_data=reference_df, current_data=current_df)
+report_json = data_drift_report.json()
+
+# 3. Evaluate Results & Log Metrics
+drift_summary = data_drift_report.as_dict()
+dataset_drifted = drift_summary["metrics"][0]["result"]["dataset_drift"]
+
+if dataset_drifted:
+    # Trigger Governance Action or Retraining Pipeline
+    print(f"[ALERT] Significant Data Drift Detected on Model Endpoint!")
+```
+
+

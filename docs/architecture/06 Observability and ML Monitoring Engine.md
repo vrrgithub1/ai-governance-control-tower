@@ -131,4 +131,32 @@ if dataset_drifted:
     print(f"[ALERT] Significant Data Drift Detected on Model Endpoint!")
 ```
 
+### 2. Explainability via SHAP (SHapley Additive exPlanations)
+
+To ensure compliance with explainable AI mandates (e.g., EU AI Act high-risk requirements), predictions are annotated with SHAP values.
+
+```Python
+import shap
+import mlflow
+
+# Load current production model from Unity Catalog Model Registry
+model_uri = "models:/adb_governance_control.models.customer_churn_model@champion"
+loaded_model = mlflow.pyfunc.load_model(model_uri)
+
+# Compute Tree/Kernel SHAP values on sample production batch
+explainer = shap.Explainer(loaded_model.unwrap_python_model())
+shap_values = explainer(current_df[feature_columns])
+
+# Extract Global Feature Importance for Governance Telemetry
+global_importance = pd.DataFrame({
+    'feature': feature_columns,
+    'mean_abs_shap': abs(shap_values.values).mean(axis=0)
+})
+
+# Write SHAP values to Governance Storage for Audit Readiness
+spark_shap_df = spark.createDataFrame(global_importance)
+spark_shap_df.write.format("delta").mode("append").saveAsTable("adb_governance_control.observability.model_explainability_metrics")
+
+```
+
 

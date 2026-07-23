@@ -159,14 +159,12 @@ spark_shap_df.write.format("delta").mode("append").saveAsTable("adb_governance_c
 
 ```
 
-## Key Expectation Categories
+## Metrics Breakdown & Thresholds
 
-AIGCT enforces three tiers of validation checks using Great Expectations:
-
-| Check Category | Description | Sample GE Expectation | Action on Failure |
-| :--- | :--- | :--- | :--- |
-| Schema Integrity | Ensures required columns and data types exist. | expect_table_columns_to_match_ordered_list | Hard Stop (Quarantine) |
-| Completeness | Prevents null or missing values in critical identifiers. | expect_column_values_to_not_be_null | Hard Stop (Quarantine) |
-| Domain Validity | Confirms numerical boundaries, string formats, or regex patterns. | expect_column_values_to_be_between | Soft Warning / Quarantine |
-
+| Metric | Tool | Mathematical Method / Test | Target Threshold | Action on Violation |
+| :--- | :--- | :--- | :--- | :--- |
+| Numerical Feature Drift | Evidently AI | Kolmogorov-Smirnov (KS) Test | p - value < 0.05 | Flag Warning / Email |
+| Categorical Feature Drift | Evidently AI | Chi-Square (x2) Goodness-of-Fit | p - value < 0.05 | Flag Warning |
+| Dataset Drift Share | Evidently AI | Percentage of drifted features | > 20% of features | Raise High Incident |
+| Feature Attribution Shift | SHAP | Mean Absolute SHAP Rank Change | Top 3 features shifted | Flag for Model Review |
 

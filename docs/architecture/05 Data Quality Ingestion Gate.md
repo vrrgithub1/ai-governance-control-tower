@@ -97,3 +97,46 @@ AIGCT enforces three tiers of validation checks using Great Expectations:
 | Completeness | Prevents null or missing values in critical identifiers. | expect_column_values_to_not_be_null | Hard Stop (Quarantine) |
 | Domain Validity | Confirms numerical boundaries, string formats, or regex patterns. | expect_column_values_to_be_between | Soft Warning / Quarantine |
 
+## Python / Great Expectations Code Implementation
+
+Below is a declarative Python implementation snippet integrated within a Databricks Ingestion Job.
+
+```Python
+import great_expectations as gx
+
+# Initialize GE Data Context
+context = gx.get_context()
+
+# Load Batch Data from Landing Zone
+batch_request = context.get_datasource("adls_landing_zone").get_batch_request()
+
+# Define or Retrieve Expectation Suite
+suite_name = "customer_ingestion_quality_suite"
+validator = context.get_validator(
+    batch_request=batch_request,
+    expectation_suite_name=suite_name
+)
+
+# Apply Assertions
+validator.expect_column_values_to_not_be_null(column="customer_id")
+validator.expect_column_values_to_match_regex(column="email", regex=r"^[\w\.-]+@[\w\.-]+\.\w+$")
+validator.expect_column_values_to_be_between(column="age", min_value=18, max_value=120)
+
+# Save and Run Validation
+validation_result = validator.validate()
+
+# Circuit Breaker Logic
+if not validation_result.success:
+    # Route to Quarantine Zone with Error Context
+    quarantine_path = "abfss://quarantine@storage.dfs.core.windows.net/failed_ingestions/"
+    df_failed = validator.execution_engine.dataframe
+    df_failed.write.format("delta").mode("append").save(quarantine_path)
+    
+    raise ValueError(f"Ingestion Circuit Breaker Triggered: Data Quality Validation Failed. Details: {validation_result}")
+else:
+    # Proceed to Unity Catalog Bronze Layer
+    df_clean = validator.execution_engine.dataframe
+    df_clean.write.format("delta").mode("append").saveAsTable("adb_governance_control.bronze.customer_raw")
+```
+
+

@@ -52,3 +52,29 @@ graph TD
     class ReportGen,Dashboards,ExternalSIEM outputStyle;
 ```
 
+## Audit Telemetry Lifecycle & Lineage Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Data Engineer / AI Agent
+    participant UC as Unity Catalog Engine
+    participant SystemTables as System Audit Tables
+    participant AuditEngine as Telemetry Engine
+    participant Auditor as Compliance Auditor / Inspector
+
+    User->>UC: Execute Query / Model Fine-Tuning / Policy Update
+    UC->>SystemTables: Async Write Event Telemetry (Who, What, When, Query Hash)
+    
+    rect rgb(30, 41, 59)
+        note over AuditEngine: Continuous Telemetry Processing Pipeline
+        AuditEngine->>SystemTables: Fetch Audit & Lineage Delta Stream
+        AuditEngine->>AuditEngine: Enrich with Regulatory Mapping Tag (e.g., EU AI Act Art. 12)
+        AuditEngine->>AuditEngine: Store Encrypted Snapshot in Immutable Delta Table
+    end
+
+    Auditor->>AuditEngine: Request Model Pedigree & Access Log Report
+    AuditEngine-->>Auditor: Export Immutable Audit Bundle (PDF / JSON / Interactive Dash)
+```
+
+

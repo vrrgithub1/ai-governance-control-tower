@@ -60,20 +60,22 @@ The AIGCT Dashboard is organized into three primary tabs, each mapping to a spec
 ### 1. Executive / CDO View (The "Control Tower")
 - **Target Audience:** Chief Data Officer, Chief AI Officer, IT Leadership.
 - **Key Metrics:**
- Global AI Risk Score: An aggregated metric indicating overall compliance health across all production models.
- Regulatory Alignment: Boolean indicators (Pass/Fail) for EU AI Act, NIST AI RMF, and internal policies.
- Cost & Carbon Footprint: Total compute cost and estimated carbon emissions for ML workloads, derived from ⁠system.billing.usage⁠.
+  - **Global AI Risk Score:** An aggregated metric indicating overall compliance health across all production models.
+  - **Regulatory Alignment:** Boolean indicators (Pass/Fail) for EU AI Act, NIST AI RMF, and internal policies.
+  - **Cost & Carbon Footprint:** Total compute cost and estimated carbon emissions for ML workloads, derived from ⁠system.billing.usage⁠.
 ### 2. Compliance & Auditor View
 - **Target Audience:** Governance, Risk, and Compliance (GRC) teams, External Auditors.
 - **Key Metrics:**
- Access Denials & Anomalies: Spike charts showing rejected queries or unauthorized access attempts.
- Policy Evolution Tracker: Timeline of when row/column masking policies were created, modified, or dropped.
- Data Lineage Explorer: Tabular views of the exact data sets (and their versions) used to train specific model iterations.
+  - **Access Denials & Anomalies:** Spike charts showing rejected queries or unauthorized access attempts.
+  - **Policy Evolution Tracker:** Timeline of when row/column masking policies were created, modified, or dropped.
+  - **Data Lineage Explorer:** Tabular views of the exact data sets (and their versions) used to train specific model iterations.
 ### 3. MLOps & Data Engineering View
 - **Target Audience:** Data Engineers, ML Engineers, Data Scientists.
 - **Key Metrics:**
- Data Quality Circuit Breakers: Real-time status of Great Expectations tests across ingestion pipelines.
- Feature & Concept Drift: Visual alerts (KS-Test and Chi-Square outputs) flagging when production data deviates from training baselines.
- Model Latency & Endpoint Health: Request volume, error rates, and inference latency for active model endpoints.
-Dashboards-as-Code Implementation (⁠.lvdash.json⁠)
+  - **Data Quality Circuit Breakers:** Real-time status of Great Expectations tests across ingestion pipelines.
+  - **Feature & Concept Drift:** Visual alerts (KS-Test and Chi-Square outputs) flagging when production data deviates from training baselines.
+  - **Model Latency & Endpoint Health:** Request volume, error rates, and inference latency for active model endpoints.
+
+## Dashboards-as-Code Implementation (⁠.lvdash.json⁠)
+
 By storing the dashboard layout and queries in a ⁠.lvdash.json⁠ file, AIGCT integrates UI updates directly into the CI/CD pipeline. Below is a conceptual snippet illustrating how a widget (e.g., tracking failed quality tests) is defined as code:

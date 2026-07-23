@@ -60,3 +60,33 @@ graph TD
     class GovernanceDash,AlertNotifier hubStyle;
 ```
 
+## Telemetry Flow & Drift Evaluation Lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Application / User
+    participant Model as Serving Endpoint (MLflow)
+    participant UC as Unity Catalog (Delta Logs)
+    participant Obs as Observability Job (Evidently + SHAP)
+    participant Alert as Governance Incident System
+
+    Client->>Model: Predict Request Payload
+    Model-->>Client: Inference Response
+    Model->>UC: Async Write Request/Response to `gold.inference_logs`
+    
+    rect rgb(30, 41, 59)
+        note over Obs: Scheduled / Batch Monitoring Pipeline
+        Obs->>UC: Fetch Baseline vs. Production Payload Window
+        Obs->>Obs: Calculate Data Drift & Covariate Shift
+        Obs->>Obs: Compute SHAP Value Distributions
+    end
+
+    alt Drift Metric > Threshold (e.g., p-value < 0.05)
+        Obs->>Alert: Trigger Model Degradation Alert
+        Obs->>UC: Write Metric Event to `system.governance.metrics`
+    else Metrics within Normal Range
+        Obs->>UC: Record Health Metric Event
+    end
+```
+

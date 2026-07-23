@@ -52,3 +52,110 @@ graph TD
     class Linter,DataQualityCheck,BundleDeploy cicdStyle;
     class ProdCatalog,LiveDash,LiveModels prodStyle;
 ```
+
+## Deployment & Verification Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Engineer as Data Engineer
+    participant GitHub as GitHub Actions Runner
+    participant DevUC as Dev Unity Catalog
+    participant ProdUC as Prod Unity Catalog
+    participant Dash as Databricks Lakehouse Dashboards
+
+    Engineer->>GitHub: Create Pull Request (Update Policy or Dashboard `.lvdash.json`)
+    
+    rect rgb(30, 41, 59)
+        note over GitHub: Step 1: Governance Policy Linting
+        GitHub->>GitHub: Verify SQL Masking Functions & Tag Standards
+        GitHub->>GitHub: Validate `.lvdash.json` Dashboard Schema Syntax
+    end
+
+    rect rgb(30, 41, 59)
+        note over GitHub, DevUC: Step 2: Integration & Quality Gate Validation
+        GitHub->>DevUC: Execute Great Expectations Circuit Breaker Test
+        DevUC-->>GitHub: Test Pass Confirmation
+    end
+
+    Engineer->>GitHub: Merge Pull Request to Main
+    
+    rect rgb(30, 41, 59)
+        note over GitHub, ProdUC: Step 3: Production Release (DABs)
+        GitHub->>ProdUC: Apply Unity Catalog Grants, Row Masks, & Dynamic Policies
+        GitHub->>Dash: Update Production Control Tower Dashboard (`.lvdash.json`)
+    end
+```
+
+## Technical Deep-Dive: GitHub Actions CI/CD Workflow
+
+The following GitHub Actions workflow automates the validation and cross-workspace deployment of governance artifacts and Lakehouse dashboards:
+
+```yaml
+name: AIGCT Continuous Governance Pipeline
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'dashboards/**'
+      - 'policies/**'
+  push:
+    branches: [ main ]
+
+jobs:
+  validate-governance:
+    name: Policy & Quality Gate Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Governance Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install databricks-cli pytest great_expectations sqlfluff
+
+      - name: Lint Governance SQL Policies
+        run: |
+          echo "Linting Unity Catalog Row and Column Level Security Statements..."
+          sqlfluff lint policies/ --dialect databricks
+
+      - name: Validate Dashboard JSON Schema
+        run: |
+          echo "Validating AIGCT Dashboard Definition (.lvdash.json)..."
+          python -c "import json; json.load(open('dashboards/aigct_control_tower.lvdash.json'))"
+
+  deploy-production:
+    name: Deploy to Production Workspace
+    needs: validate-governance
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Deploy Databricks Asset Bundle (DABs)
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_PROD_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_PROD_TOKEN }}
+        run: |
+          databricks bundle deploy --target prod
+
+      - name: Sync Lakehouse Dashboard Code
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_PROD_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_PROD_TOKEN }}
+        run: |
+          echo "Syncing updated .lvdash.json to Production Dashboard API..."
+          databricks workspace import dashboards/aigct_control_tower.lvdash.json /Shared/AIGCT/aigct_control_tower.lvdash.json --format AUTO --overwrite
+```

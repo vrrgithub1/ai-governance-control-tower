@@ -79,3 +79,36 @@ The AIGCT Dashboard is organized into three primary tabs, each mapping to a spec
 ## Dashboards-as-Code Implementation (⁠.lvdash.json⁠)
 
 By storing the dashboard layout and queries in a ⁠.lvdash.json⁠ file, AIGCT integrates UI updates directly into the CI/CD pipeline. Below is a conceptual snippet illustrating how a widget (e.g., tracking failed quality tests) is defined as code:
+
+```JSON
+{
+  "pages": [
+    {
+      "name": "MLOps View",
+      "widgets": [
+        {
+          "type": "chart",
+          "title": "Failed Data Quality Gates (Last 7 Days)",
+          "dataset": "quality_validation_summary",
+          "queries": [
+            "SELECT pipeline_name, COUNT(*) as failures FROM adb_governance_control.quality.gx_validation_results WHERE success = false AND run_time >= current_date() - 7 GROUP BY pipeline_name"
+          ],
+          "visualization": {
+            "type": "bar",
+            "x_axis": "pipeline_name",
+            "y_axis": "failures",
+            "color_palette": ["#EF4444"]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Key Benefits for AI Governance
+
+- **1. Auditable UI Changes:** Because the dashboard is managed as code, any changes to how compliance metrics are calculated or displayed are tracked in Git, preventing "metric manipulation."
+- **2. Zero-Latency Reporting:** Lakehouse Dashboards run directly on the data warehouse, meaning the moment a policy breach occurs or a model drifts, it is visible on the dashboard.
+- **3. Frictionless Onboarding:** When a new ML model is deployed to production, the underlying queries automatically pick up its telemetry—no manual dashboard updates required.
+

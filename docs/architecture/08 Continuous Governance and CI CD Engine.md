@@ -165,6 +165,7 @@ jobs:
 To ensure clear isolation of duties, environments are governed by distinct automation roles:
 
 | **Environment** | **Purpose** | **Target Catalog** | **Promotion Condition** | **Deployment Trigger** |
+| :--- | :--- | :--- | :--- | :--- |
 | Development | Rule creation & local testing | ⁠adb_governance_dev⁠ | Developer Commit | Feature Branch Push |
 | Staging | Automated data quality & drift dry-runs | adb_governance_stage | Unit & Integration Tests Pass | Pull Request Open |
 | Production | Live governance, monitoring & auditing | adb_governance_control | Approved PR & Security Sign-off | Merge to main |

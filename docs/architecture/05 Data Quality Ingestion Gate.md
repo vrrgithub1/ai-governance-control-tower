@@ -139,4 +139,9 @@ else:
     df_clean.write.format("delta").mode("append").saveAsTable("adb_governance_control.bronze.customer_raw")
 ```
 
+## Integration with Governance & Telemetry
+
+- **Audit Lineage:** Validation results (pass/fail status, percentage of failed rows, evaluated rules) are formatted as structured JSON and published to Unity Catalog system tables (`system.access.audit` or custom governance logging schemas).
+- **CI/CD Integration:** Expectation suites are managed as JSON artifacts in version control (`git`), allowing team code reviews for any updates to data quality contracts.
+
 

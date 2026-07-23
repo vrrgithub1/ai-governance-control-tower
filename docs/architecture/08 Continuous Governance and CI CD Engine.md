@@ -159,3 +159,18 @@ jobs:
           echo "Syncing updated .lvdash.json to Production Dashboard API..."
           databricks workspace import dashboards/aigct_control_tower.lvdash.json /Shared/AIGCT/aigct_control_tower.lvdash.json --format AUTO --overwrite
 ```
+
+## Governance Promotion Matrix
+
+To ensure clear isolation of duties, environments are governed by distinct automation roles:
+
+| **Environment** | **Purpose** | **Target Catalog** | **Promotion Condition** | **Deployment Trigger** |
+| Development | Rule creation & local testing | ⁠adb_governance_dev⁠ | Developer Commit | Feature Branch Push |
+| Staging | Automated data quality & drift dry-runs | adb_governance_stage | Unit & Integration Tests Pass | Pull Request Open |
+| Production | Live governance, monitoring & auditing | adb_governance_control | Approved PR & Security Sign-off | Merge to main |
+
+## Key Benefits for AI Governance
+
+- **1. Elimination of Configuration Drift:** Guarantees that production security rules and dashboards perfectly reflect the audited Git repository state.
+- **2. Shift-Left Security:** Catch compliance violations, broken schema changes, or missing column masks early during the code review process.
+- **3. Repeatable & Scalable:** Allows new workspaces, models, or data sources to be onboarded instantly using standardized deployment templates.

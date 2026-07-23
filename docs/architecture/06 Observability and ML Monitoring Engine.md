@@ -159,4 +159,14 @@ spark_shap_df.write.format("delta").mode("append").saveAsTable("adb_governance_c
 
 ```
 
+## Key Expectation Categories
+
+AIGCT enforces three tiers of validation checks using Great Expectations:
+
+| Check Category | Description | Sample GE Expectation | Action on Failure |
+| :--- | :--- | :--- | :--- |
+| Schema Integrity | Ensures required columns and data types exist. | expect_table_columns_to_match_ordered_list | Hard Stop (Quarantine) |
+| Completeness | Prevents null or missing values in critical identifiers. | expect_column_values_to_not_be_null | Hard Stop (Quarantine) |
+| Domain Validity | Confirms numerical boundaries, string formats, or regex patterns. | expect_column_values_to_be_between | Soft Warning / Quarantine |
+
 

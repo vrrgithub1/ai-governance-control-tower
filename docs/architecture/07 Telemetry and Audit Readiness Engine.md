@@ -127,3 +127,33 @@ JOIN QueryAudit q ON m.source_table = q.table_accessed
 ORDER BY q.event_time DESC;
 ```
 
+## Mapping Regulatory Frameworks to Telemetry Evidence
+
+AIGCT automatically maps logged system telemetry to international compliance requirements:
+
+```mermaid
+graph LR
+    subgraph RegulatoryFrameworks ["Compliance Standards"]
+        EU_AI["EU AI Act (Art. 12 Record-Keeping)"]
+        NIST["NIST AI RMF (Measure 2.2)"]
+        ISO["ISO/IEC 42001 (Control A.9)"]
+    end
+
+    subgraph TelemetryEvidence ["AIGCT Telemetry Evidence"]
+        E1["Immutable Query & Change Logs"]
+        E2["Feature & Model Lineage Graphs"]
+        E3["Policy Enforcement Audit Logs"]
+    end
+
+    E1 --> EU_AI
+    E2 --> NIST
+    E3 --> ISO
+
+    classDef regStyle fill:#7c2d12,stroke:#f97316,color:#f8fafc;
+    classDef evStyle fill:#064e3b,stroke:#10b981,color:#f8fafc;
+
+    class EU_AI,NIST,ISO regStyle;
+    class E1,E2,E3 evStyle;
+
+```
+

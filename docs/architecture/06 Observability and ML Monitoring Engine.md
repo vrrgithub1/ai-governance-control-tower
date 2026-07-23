@@ -165,6 +165,6 @@ spark_shap_df.write.format("delta").mode("append").saveAsTable("adb_governance_c
 | :--- | :--- | :--- | :--- | :--- |
 | Numerical Feature Drift | Evidently AI | Kolmogorov-Smirnov (KS) Test | $p - value < 0.05$ | Flag Warning / Email |
 | Categorical Feature Drift | Evidently AI | Chi-Square $(x^{2})$ Goodness-of-Fit | $p - value < 0.05$ | Flag Warning |
-| Dataset Drift Share | Evidently AI | Percentage of drifted features | > 20.0\% of features | Raise High Incident |
+| Dataset Drift Share | Evidently AI | Percentage of drifted features | > 20\% of features | Raise High Incident |
 | Feature Attribution Shift | SHAP | Mean Absolute SHAP Rank Change | Top 3 features shifted | Flag for Model Review |
 

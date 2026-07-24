@@ -79,4 +79,8 @@ graph LR
 
 Despite automated controls, system architectures retain operational risks. The table below details mitigation strategies for known failure modes:
 
+|   | Likelihood : Low | Likelihood : High |
+| :--- | :--- | :--- |
+| Severity: High | [R-01] Silent Model Drift <br>(Mitigated via Evidently AI) | [R-02] Dynamic Policy Bypass <br>(Mitigated via Unity Catalog SSOT) |
+| Severity: Medium | [R-03] CI/CD Drift / Manual Edit <br>(Mitigated via DABs & GitOps) | [R-04] Audit Log Retention Expire <br>(Mitigated via Delta Lake Append-Only) |
 

@@ -1,0 +1,117 @@
+# 02. Business Problem & Regulatory Landscape
+
+## Executive Overview
+
+As organizations scale their enterprise deployments of Generative AI, Large Language Models (LLMs), and automated machine learning pipelines, the operational risk landscape shifts dramatically. Traditional enterprise data governance—designed for static relational databases and periodic batch updates—is fundamentally unequipped to handle non-deterministic AI outputs, rapid feature drift, and fine-grained data privacy mandates.
+
+Without an automated, metadata-driven architecture, enterprises face a high-stakes tradeoff: **either stall AI innovation with slow, manual compliance gates or risk massive financial penalties, brand damage, and legal liability by deploying ungoverned systems.**
+
+The **AI Governance Control Tower (AIGCT)** addresses this gap directly by unifying regulatory compliance, system telemetry, and MLOps into an automated Lakehouse environment.
+
+---
+
+## The Regulatory Imperative
+
+The global regulatory environment has shifted from soft guidelines to enforceable legal mandates with strict financial and criminal liabilities. AIGCT directly addresses key compliance requirements across major frameworks:
+
+```mermaid
+graph TD
+    %% Main Title / Node
+    Root["Global Regulatory & Compliance Landscape"]
+
+    %% Primary Branches
+    Root --> AIBranch["AI Governance & Risk Frameworks"]
+    Root --> PrivacyBranch["Data Privacy & Protection Regulations"]
+
+    %% AI Governance Subnodes
+    AIBranch --> EUAI["EU AI Act<br><i>(Binding Legislation)</i>"]
+    AIBranch --> NIST["NIST AI RMF 1.0<br><i>(Voluntary Risk Framework)</i>"]
+
+    %% Data Privacy Subnodes
+    PrivacyBranch --> GDPR["GDPR<br><i>(EU Consumer Privacy)</i>"]
+    PrivacyBranch --> CCPA["CCPA / CPRA<br><i>(US Consumer Privacy)</i>"]
+
+    %% Subgraphs to force 3rd-level leaf nodes to align VERTICALLY (TB)
+    subgraph EU_Group [" "]
+        direction TB
+        EU1["High-Risk Logging & Auditability"] --> EU2["Post-Market Risk Monitoring"] --> EU3["Technical Documentation & Lineage"]
+    end
+    EUAI --> EU1
+
+    subgraph NIST_Group [" "]
+        direction TB
+        N1["Govern & Map: Risk Identification"] --> N2["Measure: Quantitative Risk & Drift"] --> N3["Manage: Active Remediation"]
+    end
+    NIST --> N1
+
+    subgraph GDPR_Group [" "]
+        direction TB
+        P1["Right to be Forgotten & Erasure"] --> P2["Purpose Limitation & Data Minimization"]
+    end
+    GDPR --> P1
+
+    subgraph CCPA_Group [" "]
+        direction TB
+        P3["PII / SPI Masking & Consent Tracking"] --> P4["Zero-Trust Identity Access Control"]
+    end
+    CCPA --> P3
+
+    %% Styling
+    classDef default fill:#1f2937,stroke:#4b5563,stroke-width:1px,color:#f3f4f6;
+    classDef rootStyle fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#ffffff;
+    classDef aiStyle fill:#065f46,stroke:#10b981,stroke-width:1px,color:#ffffff;
+    classDef privacyStyle fill:#7c2d12,stroke:#f97316,stroke-width:1px,color:#ffffff;
+
+    class Root rootStyle;
+    class AIBranch,EUAI,NIST aiStyle;
+    class PrivacyBranch,GDPR,CCPA privacyStyle;
+    
+    style EU_Group fill:none,stroke:none;
+    style NIST_Group fill:none,stroke:none;
+    style GDPR_Group fill:none,stroke:none;
+    style CCPA_Group fill:none,stroke:none;
+```
+
+### 1. The EU AI Act
+- **Operational Challenge:** Enforces strict compliance mandates for "High-Risk AI Systems," requiring mandatory logging of operational events, continuous post-market risk monitoring, detailed data lineage, and immediate risk mitigation mechanisms.
+- **Non-Compliance Cost:** Fines up to **€35 million or 7% of global annual turnover** (whichever is higher).
+- **AIGCT Solution:** Native, immutable audit logging via Unity Catalog (`system.access.audit`), end-to-end lineage tracing (`system.access.table_lineage`), and automated quarantine routing for out-of-bounds data payloads.
+
+### 2. NIST AI Risk Management Framework (AI RMF 1.0)
+- **Operational Challenge:** Requires continuous assessment across four core functions: *Govern, Map, Measure,* and *Manage*. Organizations often struggle to transition "Measure" and "Manage" from static documentation to automated technical controls.
+- **AIGCT Solution:** Operationalizes the NIST framework directly inside Azure Databricks by embedding automated data quality testing (Great Expectations), feature drift monitoring (Evidently AI), and explainability (SHAP) into daily pipeline runs.
+
+### 3. Data Privacy Regulations (GDPR, CCPA, CPRA)
+- **Operational Challenge:** Enforcing "Right to be Forgotten," strict Purpose Limitation, and preventing unauthorized Sensitive Personal Information (SPI/PII) exposure to internal model developers and external prompt interfaces.
+- **AIGCT Solution:** Identity-centric Dynamic Column Masking and Row-Level Security (RLS) driven by Microsoft Entra ID groups, eliminating static duplicated tables and enforcing zero-trust data access at runtime.
+
+## Core Operational & Technical Pain Points
+
+Beyond legal mandates, platform engineering and data science teams encounter significant operational friction when operating without a centralized governance control tower:
+
+### 1. Passive, Post-Hoc Auditing ("The Governance Black Hole")
+- **Problem:** Compliance auditing is traditionally reactive. When an audit occurs, data teams spend weeks manually piecing together CSV logs, workspace notebooks, and access records to figure out *who* accessed *what* data to train *which* version of the model.
+- **Impact:** High engineering overhead, delayed compliance reporting, and elevated risk of unrecorded access breaches.
+
+### 2. "Silent" Model Degradation & Feature Drift
+- **Problem:** Machine Learning models in production degrade silently as real-world data distribution strays from training baselines. Without automated statistical checks, corrupted or drifted features silently feed production predictions.
+- **Impact:** Flawed business decisions, unfair or biased algorithmic outcomes, and loss of customer trust.
+
+### 3. Data Duplication & Perimeter Security Flaws
+- **Problem:** To prevent unauthorized users from viewing PII, teams frequently create duplicate, statiscally masked datasets (e.g., `customer_data_anonymized_v2`).
+- **Impact:** "Data Sprawl," exponential storage costs, sync latency, and increased risk of forgotten, unmonitored data copies leaking sensitive information.
+
+### 4. Manual Deployment Bottlenecks & Configuration Drift
+- **Problem:** Governance rules, access control lists (ACLs), and monitoring dashboards are often configured manually in workspace UIs, leading to environment drift between Dev, Staging, and Production.
+- **Impact:** Inconsistent enforcement across environments and high vulnerability to human error during manual deployments.
+
+## The AIGCT Value Proposition: Before vs After
+
+| Capability | Traditional Governance Approach | AIGCT Architectural Approach |
+| :--- | :--- | :--- |
+| **Access Control** | Static ACLs, hardcoded data masks, and physical table copies. | **Dynamic Zero-Trust:** Dynamic row filtering & column masking enforced at runtime based on Entra ID context. |
+| **Audit & Lineage** | Manual log collation from disparate infrastructure sources. | **Automated Telemetry:** Native extraction from Unity Catalog system schemas (`system.access`). |
+| **Data Quality & Isolation** | Post-ingestion manual reviews or failing silent downstream models. | **Active Quarantine:** In-flight validation (Great Expectations) routing corrupt data to quarantine layers. |
+| **Model Observability** | Ad-hoc Python notebooks run manually by data scientists. | **Continuous Governance:** Automated feature drift (Evidently AI) and SHAP explainability pipelines. |
+| **Lifecycle Deployment** | Manual UI botton-clicks and workspace-specific configurations. | **GitOps & IaC:** Complete **Dashboard-as-Code** (`.lvdash.json`) deployed via GitHub Actions CI/CD. |
+

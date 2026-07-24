@@ -84,3 +84,13 @@ Despite automated controls, system architectures retain operational risks. The t
 | Severity: High | [R-01] Silent Model Drift <br>(Mitigated via Evidently AI) | [R-02] Dynamic Policy Bypass <br>(Mitigated via Unity Catalog SSOT) |
 | Severity: Medium | [R-03] CI/CD Drift / Manual Edit <br>(Mitigated via DABs & GitOps) | [R-04] Audit Log Retention Expire <br>(Mitigated via Delta Lake Append-Only) |
 
+### Risk Mitigation Plan
+
+- **1. [R-01] Silent Model Performance Degradation**
+  - **Mitigation:** Daily automated Evidently AI drift checks trigger PagerDuty alerts and automatically roll back staging models if drift metrics cross defined tolerance limits.
+- **2. [R-02] Unauthorized Data Access via Direct SQL**
+  - **Mitigation:** Unity Catalog enforces row and column policy checks directly at the storage engine layer, rendering direct bypasses impossible regardless of the client tool used (JDBC, SQL Editor, Python).
+- **3. [R-03] Manual Configuration Overrides in Production**
+  - **Mitigation:** Production Databricks Asset Bundles (DABs) are deployed strictly via GitHub Actions service principals. Direct workspace edits in production are restricted.
+- **4. [R-04] Telemetry & Audit Log Tampering**
+  - **Mitigation:** Audit ledgers utilize append-only Delta tables with explicit write restrictions granted only to automated system principals.

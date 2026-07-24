@@ -94,3 +94,12 @@ Despite automated controls, system architectures retain operational risks. The t
   - **Mitigation:** Production Databricks Asset Bundles (DABs) are deployed strictly via GitHub Actions service principals. Direct workspace edits in production are restricted.
 - **4. [R-04] Telemetry & Audit Log Tampering**
   - **Mitigation:** Audit ledgers utilize append-only Delta tables with explicit write restrictions granted only to automated system principals.
+
+## Continuous Compliance Enforcement Lifecycle
+
+Compliance in AIGCT is maintained automatically across the Software Development Life Cycle (SDLC):
+
+- **1. Pre-Commit / PR Stage:** Static linting and security scans run on Databricks Asset Bundles (⁠.yml⁠) and Dashboard Definitions (⁠.lvdash.json⁠).
+- **2. Ingestion Stage:** Great Expectations evaluates incoming batches; failing records trigger circuit breakers.
+- **3. Training & Deployment Stage:** Unity Catalog records data lineage; MLflow registers model artifacts with complete SHAP baseline reports.
+- **4. Production / Serving Stage:** Lakehouse Dashboards display live compliance risk scores, while Evidently AI monitors production inference endpoints.

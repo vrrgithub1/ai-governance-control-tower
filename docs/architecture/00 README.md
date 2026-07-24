@@ -4,6 +4,7 @@ Welcome to the **AI Governance Control Tower (AIGCT)** architectural specificati
 
 ## System Architecture Blueprint
 
+```text
 +-----------------------------------------------------------------------------------+
 |                        AI GOVERNANCE CONTROL TOWER (AIGCT)                        |
 +-----------------------------------------------------------------------------------+
@@ -20,3 +21,5 @@ Welcome to the **AI Governance Control Tower (AIGCT)** architectural specificati
 |  Continuous Governance & CI/CD              --> [08 Continuous Governance Engine.md]|
 |  Risk Matrix & Compliance Alignment         --> [10 Risk Matrix Alignment.md]      |
 +-----------------------------------------------------------------------------------+
+```
+

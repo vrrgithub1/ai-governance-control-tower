@@ -68,12 +68,12 @@ graph LR
 
 | **Regulatory Mandate** | **Regulatory Framework** | **AIGCT Technical Control** | **Implementation Details** |
 | :--- | :--- | :--- | :--- |
-| Data Minimization & Privacy | GDPR Art. 5(1)(c) \nCCPA § 1798.100 | Unity Catalog Dynamic Masking & RLS | Automatically redacts PII/PHI columns (⁠mask_pii()⁠) and filters rows based on caller's Entra ID group membership. |
-| Right to Explanation | GDPR Art. 22 \nEU AI Act Art. 13 | SHAP Explainability & MLflow Reg | Every inference generates feature importance scores stored alongside model version lineage in MLflow |
-| Data Quality & Governance | EU AI Act Art. 10 \nNIST AI RMF (Measure 2) | Great Expectations Circuit Breaker | Ingestion pipeline fails automatically if data health tests (nulls, schema, range drift) drop below defined thresholds. |
-| Concept & Data Drift Monitoring | EU AI Act Art. 15 \nNIST AI RMF (Manage 2) | Evidently AI & Serverless Monitors | Automated statistical checks (KS-test, Chi-square) flag distribution shifts between training and serving payloads. |
-| Traceability & Auditability | EU AI Act Art. 12 \nNIST AI RMF (Govern 1) | Immutable Delta Audit Ledger | Appends system query logs, workspace access, and deployment events to an append-only Delta table (⁠audit.user_query_events⁠). |
-| Least Privilege Access | NIST SP 800-53 \nSOC 2 (CC6.1) | Explicit Workspace Entitlements | Custom workspace groups isolate roles (⁠aigct-auditors⁠, ⁠aigct-mlops⁠); avoids default broad system-group entitlements. |
+| Data Minimization & Privacy | GDPR Art. 5(1)(c) <br>CCPA § 1798.100 | Unity Catalog Dynamic Masking & RLS | Automatically redacts PII/PHI columns (⁠mask_pii()⁠) and filters rows based on caller's Entra ID group membership. |
+| Right to Explanation | GDPR Art. 22 <br>EU AI Act Art. 13 | SHAP Explainability & MLflow Reg | Every inference generates feature importance scores stored alongside model version lineage in MLflow |
+| Data Quality & Governance | EU AI Act Art. 10 <br>NIST AI RMF (Measure 2) | Great Expectations Circuit Breaker | Ingestion pipeline fails automatically if data health tests (nulls, schema, range drift) drop below defined thresholds. |
+| Concept & Data Drift Monitoring | EU AI Act Art. 15 <br>NIST AI RMF (Manage 2) | Evidently AI & Serverless Monitors | Automated statistical checks (KS-test, Chi-square) flag distribution shifts between training and serving payloads. |
+| Traceability & Auditability | EU AI Act Art. 12 <br>NIST AI RMF (Govern 1) | Immutable Delta Audit Ledger | Appends system query logs, workspace access, and deployment events to an append-only Delta table (⁠audit.user_query_events⁠). |
+| Least Privilege Access | NIST SP 800-53 <br>SOC 2 (CC6.1) | Explicit Workspace Entitlements | Custom workspace groups isolate roles (⁠aigct-auditors⁠, ⁠aigct-mlops⁠); avoids default broad system-group entitlements. |
 
 ## Architectural Residual Risk Matrix
 
